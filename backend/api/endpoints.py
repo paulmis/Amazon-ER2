@@ -2,6 +2,7 @@ from flask import jsonify, request
 from . import app
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
+from .analyzer import *
 
 ROWS_PER_PAGE = 100
 
@@ -44,6 +45,14 @@ def aggregate_unique():
     else:
         return jsonify({})
 
+def aggregate_issues_by_query(query_dict, granularity=1):
+    return query_dict
+
 @app.route('/issues', methods=['GET'])
 def get_issues():
-    pass
+    results = []
+    for i in request.args:
+        for j in request.args.getlist(i):
+            results.append(aggregate_issues_by_query({i: j}))
+
+    return jsonify(results)
