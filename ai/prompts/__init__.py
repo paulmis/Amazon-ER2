@@ -1,1 +1,1 @@
-import issue_extraction_prompt
+from .issue_extraction_prompt import create_issue_extraction_prompt

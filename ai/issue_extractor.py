@@ -8,7 +8,7 @@ from embeddings import generate_embeddings_parallel
 from llm import llm_wrapper
 import os
 import json
-from prompts.issue_extraction_prompt import create_issue_extraction_prompt
+from prompts import *
 import time
 import pandas as pd
 
@@ -62,5 +62,17 @@ def compute_issues_for_reviews(product_reviews: pd.DataFrame, max_workers=100):
             futures.append(future)
 
         results = [future.result() for future in futures]
-
+    
     return results
+
+
+def cluster_issues_for_reviews(product_reviews: pd.DataFrame, max_workers=100):
+    if 'LLM_OUTPUT' not in product_reviews.columns:
+        raise ValueError("LLM_OUTPUT column not found")
+    
+    if 
+    
+    
+    
+    
+    
