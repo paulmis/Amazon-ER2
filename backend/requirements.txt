@@ -1,0 +1,7 @@
+flask
+flask-sqlalchemy
+boto3
+langchain
+anthropic_bedrock
+pandas
+scikit-learn

@@ -1,7 +1,0 @@
-anthropic-bedrock
-langchain==0.0.344
-pydantic==1.10.9
-numpy
-scikit-learn
-pandas
-plotly

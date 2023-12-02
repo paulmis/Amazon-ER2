@@ -1,14 +1,14 @@
 import boto3
-from utils import bedrock, print_ww
+from .utils import bedrock, print_ww
 from langchain.embeddings import BedrockEmbeddings
 import numpy as np
 from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from embeddings import generate_embeddings_parallel
-from llm import llm_wrapper
+from .embeddings import generate_embeddings_parallel
+from .llm import llm_wrapper
 import os
 import json
-from prompts import *
+from .prompts import *
 import time
 import pandas as pd
 from sklearn.cluster import OPTICS
@@ -102,7 +102,7 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     embeddings_issue_names = np.array([issue['embedding'] for issue in issues])
     
     # OPTICS Clustering
-    clustering = OPTICS(metric='cosine', min_samples=2).fit(embeddings_issue_names)
+    clustering = OPTICS(metric='cosine', min_samples=min(5,len(embeddings_issue_names))).fit(embeddings_issue_names)
     labels = clustering.labels_
     
     # We group the issues by cluster
