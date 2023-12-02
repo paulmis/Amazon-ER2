@@ -4,6 +4,7 @@ from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
 from .ai.interface import analyze_comments, cluster_llm_results
+import time
 
 ROWS_PER_PAGE = 100
 
@@ -46,6 +47,12 @@ def aggregate_unique():
     else:
         return jsonify({})
 
+def _get_comment_with_id(search_result, id):
+    for i in search_result:
+        if i[0].id == id:
+            return i[0]
+    return None
+
 def aggregate_issues_by_query(query_dicts, granularity=1):
     res = []
     for query_dict in query_dicts:
@@ -55,6 +62,7 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
     bedrock_results = analyze_comments(comments_missing_llm_results)
 
     db.session.add_all(bedrock_results)
+    db.session.commit()
 
     llm_res_map = {}
     for i in range(len(comments_missing_llm_results)):
@@ -78,18 +86,27 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
 
     llm_results = list(filter(lambda x: x, map(lambda x: x[0].llm_result, res)))
     clusters = cluster_llm_results(llm_results)
-    print(clusters)
-    return []
-    return combined
+
+    final_result = {}
+    for i in clusters:
+        final_result[i] = {
+            "item_count": len(clusters[i])
+        }
+
+        for j in clusters[i]:
+            if (foo := _get_comment_with_id(res, j[0].comment_id)):
+                final_result[i]["example"] = row_to_json(foo)
+                
+
+    return final_result
 
 @app.route('/issues', methods=['GET'])
 def get_issues():
-    results = []
     queries = []
     for i in request.args:
         for j in request.args.getlist(i):
             queries.append({i:j})
 
-    aggregate_issues_by_query(queries)
+    results = aggregate_issues_by_query(queries)
 
     return jsonify(results)
