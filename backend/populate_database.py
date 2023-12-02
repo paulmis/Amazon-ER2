@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 
-CSV_FILE =  '/home/yigit/Downloads/archive/Amazon_Unlocked_Mobile.csv'
+CSV_FILE =  'ai/data/preprocessed_dataset_b2a8b513791b1ec82721131a232a4be720297cdf3147009738cb15abd88ad51e.csv'
 SQLITE_DB = 'instance/aws.db'
 
 # Function to insert data into the SQLite table
@@ -26,6 +26,9 @@ def read_csv(filename):
 
         data = [row for row in reader]
 
+    # Remove last column
+    for row in data:
+        del row[-1]
     return data
 
 if __name__ == "__main__":
