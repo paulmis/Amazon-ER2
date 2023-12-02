@@ -9,7 +9,8 @@ app.config["SQLALCHEMY_RECORD_QUERIES"] = True
 
 db = SQLAlchemy(app)
 
+from .endpoints import *
+
 with app.app_context():
     db.create_all()
 
-from .endpoints import *
