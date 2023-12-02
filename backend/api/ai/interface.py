@@ -1,9 +1,7 @@
-from issue_extractor import *
+from .issue_extractor import *
 
 import sys
-sys.path.append('..')
-from api.models import Comment, LLM_Result
-sys.path.append('../ai')
+from ..models import Comment, LLM_Result
 
 def analyze_comments(comments: list[Comment]) -> list[LLM_Result]:
     """Analyzes a list of comments and returns a list of LLM_Results."""

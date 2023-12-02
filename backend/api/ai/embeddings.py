@@ -1,5 +1,5 @@
 import boto3
-from utils import bedrock, print_ww
+from .utils import bedrock, print_ww
 from langchain.embeddings import BedrockEmbeddings
 import numpy as np
 from functools import lru_cache

@@ -1,14 +1,14 @@
 import boto3
-from utils import bedrock, print_ww
+from .utils import bedrock, print_ww
 from langchain.embeddings import BedrockEmbeddings
 import numpy as np
 from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from embeddings import generate_embeddings_parallel
-from llm import llm_wrapper
+from .embeddings import generate_embeddings_parallel
+from .llm import llm_wrapper
 import os
 import json
-from prompts import *
+from .prompts import *
 import time
 import pandas as pd
 from sklearn.cluster import OPTICS

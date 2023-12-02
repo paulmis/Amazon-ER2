@@ -3,6 +3,7 @@ from . import app, db
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
+from .ai import interface
 
 ROWS_PER_PAGE = 100
 
