@@ -1,3 +1,4 @@
+from sqlalchemy import PickleType
 from . import db
 from typing import List
 from sqlalchemy.orm import relationship
@@ -22,9 +23,8 @@ class Comment(db.Model):
 
 class LLM_Result(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-    issues = db.Column(db.String(255))
-    severities = db.Column(db.String(255))
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id', ondelete='CASCADE'), unique=True, nullable=False)
+    issues = db.Column(PickleType)
 
     comment = relationship('Comment', back_populates='llm_result')
 
