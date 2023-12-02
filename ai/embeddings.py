@@ -21,7 +21,7 @@ def get_similarity(text1: str, text2: str):
     embedding2 = get_embedding(text2)
     return np.dot(embedding1, embedding2)
 
-def generate_embeddings_parallel(texts: list):
+def generate_embeddings_parallel(texts: list) -> np.ndarray:
     """Generate embeddings for a list of text strings in parallel"""
     with ThreadPoolExecutor() as executor:
         embeddings = list(executor.map(get_embedding, texts))

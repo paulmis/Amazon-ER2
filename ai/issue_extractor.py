@@ -11,6 +11,7 @@ import json
 from prompts import *
 import time
 import pandas as pd
+from sklearn.cluster import OPTICS
 
 def get_json_from_comment_analysis(comment_analysis: str) -> dict:
     """
@@ -63,14 +64,77 @@ def compute_issues_for_reviews(product_reviews: pd.DataFrame, max_workers=100):
 
         results = [future.result() for future in futures]
     
-    return results
+    # We now have json and we need to add the embeddings of the issue names for every single issue.
+    # We flatten the issues into a list
+    llm_outputs = results
+    issues = []
+    for llm_output in llm_outputs:
+        issues.extend(llm_output['issues'])
+    
+    # Issue names
+    issue_names = [issue['issue'] for issue in issues]
+    
+    # We generate the embeddings for the issue names
+    embeddings_issue_names = generate_embeddings_parallel(issue_names)
+    issue_name_to_embedding = dict(zip(issue_names, embeddings_issue_names))
+    # We add the embeddings to the issues
+    for llm_output in llm_outputs:
+        for issue in llm_output['issues']:
+            issue['embedding'] = issue_name_to_embedding[issue['issue']]
+    
+    return llm_outputs
 
-
-def cluster_issues_for_reviews(product_reviews: pd.DataFrame, max_workers=100):
+def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     if 'LLM_OUTPUT' not in product_reviews.columns:
         raise ValueError("LLM_OUTPUT column not found")
     
-    if 
+    # We flatten the issues into a list
+    llm_outputs = product_reviews['LLM_OUTPUT'].tolist()
+    # Get all issue names and their embeddings
+    issues = []
+    for llm_output in llm_outputs:
+        issues.extend(llm_output['issues'])
+    
+    # Issue names
+    issue_names = [issue['issue'] for issue in issues]
+    
+    # Embeddings of issue names
+    embeddings_issue_names = np.array([issue['embedding'] for issue in issues])
+    
+    # OPTICS Clustering
+    clustering = OPTICS(metric='cosine', min_samples=2).fit(embeddings_issue_names)
+    labels = clustering.labels_
+    
+    # We group the issues by cluster
+    clusters = {}
+    for i, label in enumerate(labels):
+        if label == -1:
+            continue
+        if label not in clusters:
+            clusters[label] = []
+        clusters[label].append(issues[i])
+    
+    # For each cluster we get the center
+    clusters_centers = {}
+    for cluster in clusters:
+        cluster_embeddings = np.array([issue['embedding'] for issue in clusters[cluster]])
+        clusters_centers[cluster] = np.mean(cluster_embeddings, axis=0)
+    
+    # We get for each cluster the closest issue name to the cluster center
+    clusters_issue_names = {}
+    for cluster in clusters_centers:
+        cluster_center = clusters_centers[cluster]
+        distances = np.linalg.norm(cluster_center - embeddings_issue_names, axis=1)
+        closest_issue_index = np.argmin(distances)
+        clusters_issue_names[cluster] = issue_names[closest_issue_index]
+    
+    # We now go from cluster_issue_name to all issues names in the cluster
+    clusters_issues = {}
+    for cluster in clusters_issue_names:
+        clusters_issues[clusters_issue_names[cluster]] = [issue['issue'] for issue in clusters[cluster]]
+    
+    return clusters_issues
+
     
     
     
