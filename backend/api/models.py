@@ -10,10 +10,9 @@ class LLM_Result(db.Model):
 
     comment = relationship('Comment', back_populates='llm_result')
 
-    def __init__(self, issues, severities, comment):
+    def __init__(self, issues, comment_id):
         self.issues = issues
-        self.severities = severities
-        self.comment = comment
+        self.comment_id = comment_id
 
 class Comment(db.Model):
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
