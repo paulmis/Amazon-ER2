@@ -87,18 +87,38 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
     llm_results = list(filter(lambda x: x, map(lambda x: x[0].llm_result, res)))
     clusters = cluster_llm_results(llm_results)
 
-    final_result = {}
+    final_result = []
     for i in clusters:
-        final_result[i] = {
+        tmp = {
+            "name": i,
             "item_count": len(clusters[i])
         }
 
         for j in clusters[i]:
             if (foo := _get_comment_with_id(res, j[0].comment_id)):
-                final_result[i]["example"] = row_to_json(foo)
+                tmp["example"] = row_to_json(foo)
+        final_result.append(tmp)
                 
 
     return final_result
+
+def get_all_reviews_in_cluster(query_dicts, cluster_name, granularity=1):
+    res = []
+    for query_dict in query_dicts:
+        res += db.session.query(Comment, LLM_Result).filter_by(**query_dict).outerjoin(LLM_Result).all()
+
+    llm_results = list(filter(lambda x: x, map(lambda x: x[0].llm_result, res)))
+    clusters = cluster_llm_results(llm_results)
+
+    if cluster_name not in clusters:
+        return []
+
+    reviews = []
+
+    for i in clusters[cluster_name]:
+        reviews.append(row_to_json(_get_comment_with_id(res, i[0].comment_id)))
+
+    return reviews
 
 @app.route('/issues', methods=['GET'])
 def get_issues():
@@ -109,4 +129,21 @@ def get_issues():
 
     results = aggregate_issues_by_query(queries)
 
+    return jsonify(results)
+
+@app.route('/issues_for_cluster', methods=['GET'])
+def get_reviews_in_cluster():
+    queries = []
+    cluster_name = None
+    for i in request.args:
+        if i == 'cluster_name':
+            cluster_name = request.args[i]
+            continue
+        for j in request.args.getlist(i):
+            queries.append({i:j})
+
+    if not cluster_name:
+        return []
+
+    results = get_all_reviews_in_cluster(queries, cluster_name)
     return jsonify(results)
