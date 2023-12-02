@@ -14,10 +14,24 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table";
+import { use } from "react";
+import useSWR from "swr";
+
+export async function fetcher<JSON = any>(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<JSON> {
+  const res = await fetch(input, init)
+  return res.json()
+}
+
 
 export default function Home() { 
     const id = usePathname().split("/")[2];
     const c = ["Bad microphone", "Comment1asdkajlkasjdkladjalsjdlasdjasldasda", "Good", "Okay"]
+
+
+
     return (
         <>
           <Head>
