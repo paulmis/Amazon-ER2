@@ -1,12 +1,12 @@
 from flask import jsonify, request
-from . import app
+from . import app, db
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
 
 ROWS_PER_PAGE = 100
 
-row_to_json = lambda row: {column: str(getattr(row, column)) for column in row.__table__.c.keys()}
+row_to_json = lambda row: {column: getattr(row, column) for column in row.__table__.c.keys()}
 
 @app.route('/query', methods=['GET'])
 def get_products():
@@ -46,7 +46,27 @@ def aggregate_unique():
         return jsonify({})
 
 def aggregate_issues_by_query(query_dict, granularity=1):
-    return query_dict
+    res = db.session.query(Comment, LLM_Result).filter_by(**query_dict).outerjoin(LLM_Result).all()
+
+    combined = []
+    for i in res:
+        if i[0]:
+            d = row_to_json(i[0])
+        else:
+            continue
+        if i[1]:
+            d2 = row_to_json(i[1])
+            d2.pop('id')
+            d.update(d2)
+        else:
+            # Make a call to bedrock LLM here
+            pass
+        if d:
+            combined.append(d)
+
+    # Cluster here
+
+    return combined
 
 @app.route('/issues', methods=['GET'])
 def get_issues():
