@@ -19,8 +19,6 @@ def cluster_llm_results(llm_results: list[LLM_Result]) -> dict[str, list[tuple[L
     
     if len(llm_results) == 0:
         return {}
-    if len(llm_results) == 1:
-        return llm_results[0].issues
     df = llm_results_to_pd(llm_results)
     clustered_issues = cluster_issues_for_reviews(df)
     inverse_clustered_issues = {}
