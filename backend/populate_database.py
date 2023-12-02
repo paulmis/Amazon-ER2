@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 
-CSV_FILE =  '/home/yigit/Downloads/archive/Amazon_Unlocked_Mobile.csv'
+CSV_FILE =  '/home/yigit/Downloads/preprocessed_dataset_b2a8b513791b1ec82721131a232a4be720297cdf3147009738cb15abd88ad51e.csv'
 SQLITE_DB = 'instance/aws.db'
 
 # Function to insert data into the SQLite table
@@ -13,7 +13,7 @@ def insert_data(data):
     cursor.executemany('''
         INSERT INTO comment (product, brand, price, rating, review, votes)
         VALUES (?, ?, ?, ?, ?, ?)
-    ''', data)
+        ''', map(lambda x: x[:-1], data))
 
     connection.commit()
     connection.close()

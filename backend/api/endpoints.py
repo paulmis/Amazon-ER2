@@ -3,7 +3,7 @@ from . import app, db
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
-from .ai import interface
+from .ai.interface import analyze_comments, cluster_llm_results
 
 ROWS_PER_PAGE = 100
 
@@ -46,34 +46,50 @@ def aggregate_unique():
     else:
         return jsonify({})
 
-def aggregate_issues_by_query(query_dict, granularity=1):
-    res = db.session.query(Comment, LLM_Result).filter_by(**query_dict).outerjoin(LLM_Result).all()
+def aggregate_issues_by_query(query_dicts, granularity=1):
+    res = []
+    for query_dict in query_dicts:
+        res += db.session.query(Comment, LLM_Result).filter_by(**query_dict).outerjoin(LLM_Result).all()
+
+    comments_missing_llm_results = list(map(lambda x: x[0], filter(lambda x: x[1] is None, res)))
+    bedrock_results = analyze_comments(comments_missing_llm_results)
+
+    db.session.add_all(bedrock_results)
+
+    llm_res_map = {}
+    for i in range(len(comments_missing_llm_results)):
+        llm_res_map[comments_missing_llm_results[i].id] = bedrock_results[i]
 
     combined = []
     for i in res:
         if i[0]:
             d = row_to_json(i[0])
+            if d['id'] in llm_res_map:
+                i[0].llm_result = llm_res_map[d['id']]
+                i = (i[0], llm_res_map[d['id']])
         else:
             continue
         if i[1]:
             d2 = row_to_json(i[1])
             d2.pop('id')
             d.update(d2)
-        else:
-            # Make a call to bedrock LLM here
-            pass
         if d:
             combined.append(d)
 
-    # Cluster here
-
+    llm_results = list(filter(lambda x: x, map(lambda x: x[0].llm_result, res)))
+    clusters = cluster_llm_results(llm_results)
+    print(clusters)
+    return []
     return combined
 
 @app.route('/issues', methods=['GET'])
 def get_issues():
     results = []
+    queries = []
     for i in request.args:
         for j in request.args.getlist(i):
-            results.append(aggregate_issues_by_query({i: j}))
+            queries.append({i:j})
+
+    aggregate_issues_by_query(queries)
 
     return jsonify(results)
