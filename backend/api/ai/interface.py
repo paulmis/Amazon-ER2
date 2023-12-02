@@ -14,10 +14,25 @@ def analyze_comments(comments: list[Comment]) -> list[LLM_Result]:
         for llm_output, comment_id in zip(llm_outputs, comment_ids)
     ]
     
-def cluster_llm_results(llm_results: list[LLM_Result]) -> dict[str, str]:
+def cluster_llm_results(llm_results: list[LLM_Result]) -> dict[str, tuple[LLM_Result, int]]:
     """Clusters a list of LLM_Results and returns a list of LLM_Results."""
+    
+    if len(llm_results) == 0:
+        return {}
+    if len(llm_results) == 1:
+        return llm_results[0].issues
     df = llm_results_to_pd(llm_results)
-    return cluster_issues_for_reviews(df)
+    clustered_issues = cluster_issues_for_reviews(df)
+    inverse_clustered_issues = {}
+    for issue in clustered_issues:
+        for issue_name in clustered_issues[issue]:
+            inverse_clustered_issues[issue_name] = issue
+    
+    final_clustered_issues = {}
+    for llm_result in llm_results:
+        for i, issue in enumerate(llm_result.issues):
+            final_clustered_issues[inverse_clustered_issues[issue]] = (llm_result, i)
+    return final_clustered_issues
     
 #######################
 # Helper Functions  ### 
