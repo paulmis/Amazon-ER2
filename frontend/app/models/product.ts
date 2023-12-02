@@ -13,6 +13,6 @@ export interface Product {
     Brand_Name: string;
     Price: number;
     Rating: number;
-    Reviews: string;
-    Review_Votes: number;
+    Reviews: string[];
+    Review_Votes: number[];
 }

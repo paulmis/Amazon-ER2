@@ -95,6 +95,13 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     for llm_output in llm_outputs:
         issues.extend(llm_output['issues'])
     
+    # If we have no issues, we return an empty dict
+    if len(issues) == 0:
+        return {}
+    
+    if len(issues) == 1:
+        return {issues[0]['issue']: [issues[0]['issue']]}
+    
     # Issue names
     issue_names = [issue['issue'] for issue in issues]
     
