@@ -16,5 +16,6 @@ def llm_wrapper(text: str) -> str:
     return client.completions.create(
         model="anthropic.claude-v2:1",
         max_tokens_to_sample=1024,
-        prompt=f"{text}"
+        prompt=f"{text}",
+        temperature=0.2,
     ).completion
