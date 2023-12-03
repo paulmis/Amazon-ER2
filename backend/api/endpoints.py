@@ -11,7 +11,7 @@ from .analyzer import *
 from .ai.interface import analyze_comments, cluster_llm_results, generate_image, get_highlight
 import time
 import os
-
+from functools import lru_cache
 ROWS_PER_PAGE = 100
 
 row_to_json = lambda row: {
@@ -260,6 +260,7 @@ def get_reviews_in_cluster():
 
 
 @app.route("/image", methods=["GET"])
+@lru_cache(maxsize=32)
 def get_image():
     product_name = request.args.get("product")
     if not product_name:
