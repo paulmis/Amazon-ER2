@@ -1,4 +1,5 @@
 import boto3
+
 from .utils import bedrock, print_ww
 from langchain.embeddings import BedrockEmbeddings
 import numpy as np
@@ -13,23 +14,20 @@ import time
 import pandas as pd
 from sklearn.cluster import OPTICS
 
-def get_json_from_comment_analysis(comment_analysis: str) -> dict:
-    """
-    Get the json from the comment analysis
-    """
+def get_json_from_llm(llm_output: str) -> dict:
     try:
-        start = comment_analysis.find("```")
+        start = llm_output.find("```")
         if start == -1:
             raise ValueError("No code block found")
 
-        end = comment_analysis.find("```", start + 3)
+        end = llm_output.find("```", start + 3)
         if end == -1:
             raise ValueError("No closing code block found")
 
-        json_string = comment_analysis[start + 3:end].strip()
+        json_string = llm_output[start + 3:end].strip()
 
         if json_string.startswith("json"):
-            json_string = json_string[4:].strip()
+            json_string = json_string[4:].strip()        
 
         return json.loads(json_string)
 
@@ -37,12 +35,32 @@ def get_json_from_comment_analysis(comment_analysis: str) -> dict:
         raise ve
     except Exception as e:
         raise ValueError("Invalid or not JSON format") from e
-    
+
+def validate_comment_json(comment_json: dict):
+    if 'issues' not in comment_json:
+        raise ValueError("No issues found in json")
+        
+    # We check that issues is a list
+    if not isinstance(comment_json['issues'], list):
+        raise ValueError("Issues is not a list")
+        
+    # We check that every issue has the required fields
+    for issue in comment_json['issues']:
+        if 'issue' not in issue:
+            raise ValueError("Issue does not have the field issue")
+        if 'confidence' not in issue:
+            raise ValueError("Issue does not have the field confidence")
+        if 'severity' not in issue:
+            raise ValueError("Issue does not have the field severity")
+        if 'comment' not in issue:
+            raise ValueError("Issue does not have the field comment")
+        
 def get_json_for_comment(product_name: str, comment: str, iter = 0):
     try:
         completion = llm_wrapper(create_issue_extraction_prompt(product_name, comment))
-    
-        return get_json_from_comment_analysis(completion)
+        comment_json = get_json_from_llm(completion)
+        validate_comment_json(comment_json)
+        return comment_json
     except ValueError as ve:
         if iter > 25:
             raise ve
@@ -50,6 +68,20 @@ def get_json_for_comment(product_name: str, comment: str, iter = 0):
         time.sleep(5)
         return get_json_for_comment(comment, iter + 1)
 
+def get_cluster_name(cluster_items: list[str], iter = 0):
+    try:
+        completion = llm_wrapper(create_cluster_summarizer_prompt(cluster_items))
+        cluster_name_json = get_json_from_llm(completion)
+        if 'cluster' not in cluster_name_json:
+            raise ValueError("No cluster name found in json")
+        return cluster_name_json['cluster']
+    except ValueError as ve:
+        if iter > 25:
+            raise ve
+        # sleep for 5 seconds
+        time.sleep(5)
+        return get_cluster_name(cluster_items, iter + 1)
+    
 def get_json_for_comment_paralllel(product_name: str, comment: str):
     return get_json_for_comment(product_name, comment)
 
@@ -84,6 +116,7 @@ def compute_issues_for_reviews(product_reviews: pd.DataFrame, max_workers=100):
     
     return llm_outputs
 
+
 def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     if 'LLM_OUTPUT' not in product_reviews.columns:
         raise ValueError("LLM_OUTPUT column not found")
@@ -102,9 +135,6 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     if len(issues) == 1:
         return {issues[0]['issue']: [issues[0]['issue']]}
     
-    # Issue names
-    issue_names = [issue['issue'] for issue in issues]
-    
     # Embeddings of issue names
     embeddings_issue_names = np.array([issue['embedding'] for issue in issues])
     
@@ -114,32 +144,39 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
     
     # We group the issues by cluster
     clusters = {}
+    noise_elements = {}  # Dictionary to hold noise elements
     for i, label in enumerate(labels):
         if label == -1:
+            # Handling noise elements
+            issue_name = issues[i]['issue']
+            if issue_name not in noise_elements:
+                noise_elements[issue_name] = []
+            noise_elements[issue_name].append(issues[i])
             continue
         if label not in clusters:
             clusters[label] = []
         clusters[label].append(issues[i])
+
+    # Assign new clusters to noise elements
+    max_cluster_label = max(clusters.keys(), default=-1)
+    for issue_name, issue_group in noise_elements.items():
+        max_cluster_label += 1
+        clusters[max_cluster_label] = issue_group
     
-    # For each cluster we get the center
-    clusters_centers = {}
-    for cluster in clusters:
-        cluster_embeddings = np.array([issue['embedding'] for issue in clusters[cluster]])
-        clusters_centers[cluster] = np.mean(cluster_embeddings, axis=0)
-    
-    # We get for each cluster the closest issue name to the cluster center
-    clusters_issue_names = {}
-    for cluster in clusters_centers:
-        cluster_center = clusters_centers[cluster]
-        distances = np.linalg.norm(cluster_center - embeddings_issue_names, axis=1)
-        closest_issue_index = np.argmin(distances)
-        clusters_issue_names[cluster] = issue_names[closest_issue_index]
-    
-    # We now go from cluster_issue_name to all issues names in the cluster
+    # For each cluster, we give it a name (in parallel)
     clusters_issues = {}
-    for cluster in clusters_issue_names:
-        clusters_issues[clusters_issue_names[cluster]] = [issue['issue'] for issue in clusters[cluster]]
-    
+
+    def process_cluster(cluster):
+        cluster_items = [issue['issue'] for issue in clusters[cluster]]
+        cluster_name = get_cluster_name(cluster_items)
+        return cluster_name, cluster_items
+
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        results = executor.map(process_cluster, clusters)
+
+    for cluster_name, cluster_items in results:
+        clusters_issues[cluster_name] = cluster_items
+
     return clusters_issues
 
     

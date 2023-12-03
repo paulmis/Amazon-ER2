@@ -34,7 +34,11 @@ def cluster_llm_results(llm_results: list[LLM_Result]) -> dict[str, list[tuple[L
                 final_clustered_issues[inverse_issue] = final_clustered_issues.get(inverse_issue, [])
                 final_clustered_issues[inverse_issue].append((llm_result, i))
     return final_clustered_issues
-    
+
+def embbed_strings(strings: list[str]) -> list[np.ndarray]:
+    """Embeds a list of strings and returns a list of embeddings."""
+    return generate_embeddings_parallel(strings)
+
 #######################
 # Helper Functions  ### 
 #######################
