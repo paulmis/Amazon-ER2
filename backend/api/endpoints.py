@@ -1,11 +1,14 @@
 from sqlalchemy import func
-from flask import jsonify, request
+from flask import jsonify, request, redirect, make_response, Response
 from . import app, db
+import base64
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
-from .ai.interface import analyze_comments, cluster_llm_results
+from .ai.interface import analyze_comments, cluster_llm_results, generate_image
 import time
+from duckduckgo_images_api import search
+import os
 
 ROWS_PER_PAGE = 100
 
@@ -186,3 +189,18 @@ def get_reviews_in_cluster():
 
     results = get_all_reviews_in_cluster(queries, cluster_name)
     return jsonify(results)
+
+
+@app.route('/image', methods=['GET'])
+def get_image():
+    product_name = request.args.get('product')
+    if not product_name:
+        return jsonify({'error': 'No product name provided'}), 400
+
+    base64_image = generate_image(product_name)  # This should return the base64 image string
+
+    # Decode the base64 string
+    image_binary = base64.b64decode(base64_image)
+
+    # Return the binary data with the correct content type
+    return Response(image_binary, mimetype='image/png')  # Or 'image/jpeg' depending on your image format
