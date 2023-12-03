@@ -43,7 +43,7 @@ export default function Home() {
       <div className="absolute min-h-screen grid grid-cols-4 grid-flow-row gap-3 min-w-[100vw] mt-20 p-8">
         {/* 4 x 4 grid of Cards */}
         {brands.map((brand, index) => (
-          <Link href={`${encodeURIComponent(brand.value)}/products/page/`}>
+          <Link href={`${encodeURIComponent(brand.value == "" ? "All brands" : brand.value)}/products/page/1`}>
             <Card key={index} className = "border-gray-800">
               <CardHeader>
                 <CardTitle className = "font-bold">{brand.value == "" ? "No Brand" : brand.value}</CardTitle>

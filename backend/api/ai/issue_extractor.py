@@ -71,7 +71,6 @@ def get_json_for_comment(product_name: str, comment: str, iter=0):
         time.sleep(5)
         return get_json_for_comment(comment, iter + 1)
 
-
 def get_cluster_name(cluster_items: list[str], iter=0):
     try:
         completion = llm_wrapper(create_cluster_summarizer_prompt(cluster_items))
@@ -86,6 +85,21 @@ def get_cluster_name(cluster_items: list[str], iter=0):
         time.sleep(5)
         return get_cluster_name(cluster_items, iter + 1)
 
+def get_highlight(product_review: str, issue: str, iter=0):
+    try:
+        completion = llm_wrapper(create_highlight_prompt(product_review, issue))
+        highlight = get_json_from_llm(completion)
+        if "text" not in highlight:
+            raise ValueError("No text found in json")
+        if not(highlight["text"] in product_review):
+            raise ValueError("Text not found in product review")
+        return highlight["text"]
+    except ValueError as ve:
+        if iter > 25:
+            return product_review
+        # sleep for 5 seconds
+        time.sleep(5)
+        return get_highlight(product_review, issue, iter + 1)
 
 def get_json_for_comment_paralllel(product_name: str, comment: str):
     return get_json_for_comment(product_name, comment)

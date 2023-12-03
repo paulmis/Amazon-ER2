@@ -80,7 +80,9 @@ export function ProductIssuePage({ name }: { name: string }) {
                 return (
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
+                    <Link href={`/products/${encodeURIComponent(name)}/issue/${encodeURIComponent(cluster.name)}`}>
                       {capitalizeFirstLetter(cluster.name)}
+                    </Link>
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
                       {[...new Set(cluster.issues.map(issue => issue.issue))].join(", ")}

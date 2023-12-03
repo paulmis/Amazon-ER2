@@ -44,7 +44,7 @@ export function Badge({ color, text }: BadgeProps) {
 
 export default function Home() {
 
-  const page = useParams().pageNumber;
+  const page = useParams().pageNumber, brand = useParams().brandName;
   const searchQuery = useSearchParams().get("search") ?? "";
   const [search, setSearch] = useState<string>(searchQuery);
   const [isRequesting, setIsRequesting] = useState<boolean>(false);
@@ -53,8 +53,10 @@ export default function Home() {
     redirect("/404");
   } else if (Number(page) < 1) {
     redirect("/404");
-  }
+  } else if (typeof brand === "undefined" || typeof brand !== "string") { redirect("/404"); }
   const [previousData, setPreviousData] = useState<productInfo[] | undefined>([]);
+
+  const brandQuery = brand == "All brands" ? "" : "&brand=" + brand;
 
   const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPreviousData(products);
@@ -67,7 +69,7 @@ export default function Home() {
     event.preventDefault();
   }
 
-  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`, fetcher);
+  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}${brandQuery}`, fetcher);
 
   if (error) return <div>Error</div>
 
