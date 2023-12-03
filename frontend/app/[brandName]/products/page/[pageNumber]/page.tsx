@@ -24,6 +24,7 @@ import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
 import { useState } from "react";
 import Link from "next/link";
+import Header from "@/components/ui/header";
 
 
 export interface BadgeProps {
@@ -93,8 +94,20 @@ export default function Home() {
       <Head>
         <title> LauzHack 2023</title>
       </Head>
-      <main className="flex min-h-screen flex-col w-full p-16">
-        <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
+      <Header />
+      <main className="flex min-h-screen flex-col w-full p-16 pt-20 items-start">
+        <div className="flex items-left justify-center flex-col h-full w-full p-4 ">
+          <div className="flex justify-center">
+            <div className="flex flex-row items-center w-[80%] pb-10">
+              <div className="px-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </div>
+              <Link href="/" className="text-xl py-2 w-[200px]" style={{ whiteSpace: "nowrap" }}>All brands</Link>
+              <div className="text-xl py-2"></div>
+            </div>
+          </div>
           <div className="flex justify-center w-full h-24">
             <form onSubmit={handleSearch} className="w-[40%]" method="get" >
               <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
@@ -122,7 +135,7 @@ export default function Home() {
                       }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
-                      <Link href={`/products/${encodeURIComponent(product.value)}/issues`}>
+                      <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`}>
                         {product.value}
                       </Link>
                     </TableCell>
