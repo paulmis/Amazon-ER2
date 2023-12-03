@@ -146,9 +146,9 @@ export default function Home() {
                     {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`} className="px-0">
                         {product.value}
                       </Link> :
-                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0} className="px-0">
+                        <div onClick={handleClick(product)} className="px-0">
                           {product.value}
-                        </Button>
+                        </div>
                       }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
