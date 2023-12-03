@@ -1,8 +1,8 @@
 'use client'
 
 import Head from "next/head";
-import Link from "next/link";
-import { CircularProgress, CircularProgressLabel } from '@chakra-ui/react'
+import "./badge.css"
+import { CircularProgress, CircularProgressLabel, background } from '@chakra-ui/react'
 
 import {
   Table,
@@ -22,6 +22,19 @@ import { Pagination } from "@/components/ui/pagination";
 import { getProductNames } from "@/lib/products";
 
 
+export interface BadgeProps {
+  color: string
+  text: string
+}
+
+export function Badge({ color, text} : BadgeProps) {
+  return <div
+    className="badge"
+    style={{backgroundColor: color}}
+  >
+    {text}
+  </div>
+}
 
 export default function Home() {
 
@@ -51,22 +64,19 @@ export default function Home() {
       <Head>
         <title> LauzHack 2023</title>
       </Head>
-      <main className="flex min-h-screen flex-col w-full p-16 p-[0.37rem]">
-        <div className="flex items-center justify-center flex-col h-full w-full p-4 " >
+      <main className="flex min-h-screen flex-col w-full p-16">
+        <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
-            <Input placeholder="Search" className="w-[50%]"></Input>
+            <Input placeholder="Product name" className="w-[40%]"></Input>
             <Pagination pageNumber={Number(page)}></Pagination>
           </div>
-          <div className="w-full px-48">
+          <div className="px-48">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[7%]">Status</TableHead>
-                  <TableHead className="w-[20%]">Product</TableHead>
-                  <TableHead className="w-[12%]">Issues</TableHead>
-                  <TableHead className="w-[7%]">High</TableHead>
-                  <TableHead className="w-[7%]">Med</TableHead>
-                  <TableHead className="w-[7%]">Low</TableHead>
+                  <TableHead className="w-[4%]">Status</TableHead>
+                  <TableHead className="w-[25%]">Product</TableHead>
+                  <TableHead className="w-[4%]">Issues</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -80,10 +90,13 @@ export default function Home() {
                       }</Button>
                     </TableCell>
                     <TableCell>{product}</TableCell>
-                    <TableCell>42</TableCell>
-                    <TableCell className="text-red-500">42</TableCell>
-                    <TableCell className="text-yellow-500">42</TableCell>
-                    <TableCell className="text-green-500">42</TableCell>
+                    <TableCell>
+                      <div className="flex flex-row">
+                        <Badge color="#d13212" text="3"/>
+                        <Badge color="#ebce38" text="12"/>
+                        <Badge color="#1d8102" text="8"/>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

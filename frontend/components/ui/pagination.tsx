@@ -17,22 +17,22 @@ export const Pagination = ({ pageNumber }: { pageNumber: number }) => {
     
 
     return (
-        <div className="w-[20%]  h-10 flex flex-row">
-            <Button variant="ghost" onClick={goToPage(pageNumber - 1)} className="">
+        <div className="w-[20%]  h-10 flex flex-row justify-center items-center">
+            <Button variant="ghost" onClick={goToPage(pageNumber - 1)} className="px-0 h-8">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
             </Button>
             {pageNumberRange.map((p, index) => (
                 p == pageNumber ?
-                    <Button key={index} variant="ghost" className="bg-gray-200" >
+                    <Button key={index} variant="ghost" className="bg-gray-200 px-3 h-8">
                         {p}
                     </Button> :
-                    <Button key={index} variant="ghost" onClick={goToPage(p)}>
+                    <Button key={index} variant="ghost" className='px-3 h-8' onClick={goToPage(p)}>
                         {p}
                     </Button>
             ))}
-            <Button variant="ghost" onClick={goToPage(pageNumber + 1)} className="p-none">
+            <Button variant="ghost" onClick={goToPage(pageNumber + 1)} className="px-0 h-8">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
