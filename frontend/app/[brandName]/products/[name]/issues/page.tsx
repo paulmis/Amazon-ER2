@@ -59,8 +59,6 @@ export default function ProductIssuePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
               </div>
-              <Link href={`/${encodeURIComponent(brandName)}/products/page/1`} className="text-xl py-2 w-[200px]" style={{ whiteSpace: "nowrap" }}>All brands</Link>
-              <div className="text-xl py-2">{name}</div>
             </div>
           </div> */}
         </div>
@@ -106,6 +104,10 @@ export default function ProductIssuePage() {
             <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
             <Image src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
           </div>
+        </div>
+        <div className="flex flex-col w-[50%] items-center">
+          <Image class="rounded-lg w-[50%] my-4" src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
+          <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
         </div>
       </main>
     </>

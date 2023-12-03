@@ -1,23 +1,28 @@
+from collections.abc import Generator
 from .issue_extractor import *
 
 import sys
 from ..models import Comment, LLM_Result
+
+MAX_COMMENT_BUFFER_SIZE = 100
 
 boto3_bedrock = bedrock.get_bedrock_client(
     region="us-east-1",
 )
 
 
-def analyze_comments(comments: list[Comment]) -> list[LLM_Result]:
+def analyze_comments(comments: list[Comment]) -> Generator[list[LLM_Result], None, None]:
     """Analyzes a list of comments and returns a list of LLM_Results."""
-    df = comments_to_pd(comments)
-    comment_ids = [comment.id for comment in comments]
-    llm_outputs = compute_issues_for_reviews(df)
+    for i in range(0, len(comments), MAX_COMMENT_BUFFER_SIZE):
+        s = slice(i, min(i+MAX_COMMENT_BUFFER_SIZE, len(comments)), 1)
+        df = comments_to_pd(comments[s])
+        comment_ids = [comment.id for comment in comments[s]]
+        llm_outputs = compute_issues_for_reviews(df, max_workers=16)
 
-    return [
-        llm_output_to_llm_result(llm_output, comment_id)
-        for llm_output, comment_id in zip(llm_outputs, comment_ids)
-    ]
+        yield [
+            llm_output_to_llm_result(llm_output, comment_id)
+            for llm_output, comment_id in zip(llm_outputs, comment_ids)
+        ]
 
 
 def cluster_llm_results(
