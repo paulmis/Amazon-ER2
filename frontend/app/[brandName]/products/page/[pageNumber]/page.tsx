@@ -44,7 +44,7 @@ export function Badge({ color, text }: BadgeProps) {
   </div>
 }
 const pieColors = ["#d13212", "#ebce38", "#1d8102"];
-const wantedGraphicData = [{ x: "low", y: 10 }, { x: "medium", y: 50 }, { x: "high", y: 40 }]; // Data that we want to display
+const wantedGraphicData = [{ x: "high", y: 10 }, { x: "medium", y: 50 }, { x: "low", y: 40 }]; // Data that we want to display
 const defaultGraphicData = [{ y: 0 }, { y: 0 }, { y: 100 }]; 
 
 export default function Home() {

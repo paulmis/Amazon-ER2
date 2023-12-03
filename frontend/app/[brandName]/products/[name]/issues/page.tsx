@@ -44,10 +44,14 @@ export default function ProductIssuePage() {
 
   useEffect(() => {
     fetchCluster(name)
-  }, [])
+  }, []);
+
+  const totalReviews = clusters.reduce((acc, cluster) => acc + cluster.item_count, 0)
 
   return (
     <>
+      <Image className="absolute z-10 top-[100px] right-[300px]" height={200} width={200} src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
+      
       <Header/>
       <main className="flex min-h-screen flex-col w-full p-8 pt-20">
         <div className="flex items-left justify-center flex-col h-full w-full p-4 ">
@@ -85,8 +89,8 @@ export default function ProductIssuePage() {
                     <TableCell className="py-[0.39rem]">
                       {[...new Set(cluster.issues.map(issue => issue.issue))].join(", ")}
                     </TableCell>
-                    <TableCell className="py-[0.39rem]">
-                      {cluster.item_count}
+                    <TableCell className="">
+                      {cluster.item_count}&#160;&#160;&#160;{((cluster.item_count / totalReviews) * 100).toFixed(0)}%
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
                       {
@@ -100,16 +104,12 @@ export default function ProductIssuePage() {
               })}
             </TableBody>
           </Table>
-          <div className="flex flex-col w-[50%]">
+          <div className="flex w-[80%] flex-col translate-y-[50px]">
             <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
-            <Image src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
           </div>
         </div>
-        <div className="flex flex-col w-[50%] items-center">
-          <Image class="rounded-lg w-[50%] my-4" src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
-          <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
-        </div>
       </main>
+
     </>
   );
 }
