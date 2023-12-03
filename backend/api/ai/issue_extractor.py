@@ -66,7 +66,7 @@ def get_json_for_comment(product_name: str, comment: str, iter=0):
         return comment_json
     except ValueError as ve:
         if iter > 25:
-            raise ve
+            return {"issues": []}
         # sleep for 5 seconds
         time.sleep(5)
         return get_json_for_comment(comment, iter + 1)
@@ -81,7 +81,7 @@ def get_cluster_name(cluster_items: list[str], iter=0):
         return cluster_name_json["cluster"]
     except ValueError as ve:
         if iter > 25:
-            raise ve
+            return cluster_items[0] if len(cluster_items) > 0 else ""
         # sleep for 5 seconds
         time.sleep(5)
         return get_cluster_name(cluster_items, iter + 1)
