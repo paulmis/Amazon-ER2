@@ -146,7 +146,10 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
 
     # OPTICS Clustering
     clustering = OPTICS(
-        metric="cosine", min_samples=min(4, len(embeddings_issue_names)) if len(embeddings_issue_names) > 10 else 2
+        metric="cosine",
+        min_samples=min(4, len(embeddings_issue_names))
+        if len(embeddings_issue_names) > 10
+        else 2,
     ).fit(embeddings_issue_names)
     labels = clustering.labels_
 
