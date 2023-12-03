@@ -53,7 +53,7 @@ export interface IssueCluster {
   /**
    * The issues that belong to this cluster.
    */
-  issues: string[]
+  issues: Issue[]
 
   /**
    * Number of reviews.
