@@ -122,7 +122,7 @@ def llm_output_to_llm_result(llm_output: dict, comment_id: int) -> LLM_Result:
     """Converts a LLM_Output to a LLM_Result."""
     return LLM_Result(
         issues=llm_output["issues"],
-        comment_id=comment_id,
+        comment_id=comment_id
     )
 
 
