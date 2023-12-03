@@ -34,13 +34,43 @@ export default function ProductIssuePage() {
   const fetchCluster = async (product: string) => {
     setLoading(true)
     const res = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product)}`)
-    const json = await res.json() as IssueCluster[]
+    var json = await res.json() as IssueCluster[]
+    var updatedJson = JSON.parse(JSON.stringify(json))
+    for (var cluster of json)
+      cluster.example.review = "Loading..."
     setClusters(json)
     setLoading(false)
+
+    // Highights
+    await Promise.all(updatedJson.map(async (cluster: IssueCluster) => {
+      console.log("query ", cluster.example.review)
+      const res = await fetch(`http://localhost:5000/highlight`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_review: cluster.example.review,
+          issue: cluster.name
+        })
+      })
+
+      const highlight = (await res.json()).highlight
+
+      if (highlight)
+        cluster.example.review = "..." + highlight + "..."
+      else {
+        cluster.example.review = cluster.example.review.length > 150 ?
+          cluster.example.review.substring(0, 150) + "..." :
+          cluster.example.review
+      }
+    }))
+    console.log("UPDATED: ", updatedJson)
+      
+    setClusters(updatedJson)
   }
 
   console.log(brandName, name);
-
 
   useEffect(() => {
     fetchCluster(name)
