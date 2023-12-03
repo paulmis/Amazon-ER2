@@ -1,6 +1,6 @@
 import anthropic_bedrock
 
-issue_extraction_prompt = """
+cluster_summarizer_prompt = """
     You are built in order to help with reviews!
     You will get a list of issue names of a cluster.
     Your task is to give a descriptive name to this cluster!
@@ -18,6 +18,6 @@ issue_extraction_prompt = """
 
 
 def create_cluster_summarizer_prompt(
-    cluster_items: list[str], system_prompt: str = issue_extraction_prompt
+    cluster_items: list[str], system_prompt: str = cluster_summarizer_prompt
 ):
     return f"{anthropic_bedrock.HUMAN_PROMPT} {system_prompt}\n\n These are the issue names, please give a descriptive cluster name: {','.join(cluster_items[:10])}\n\n {anthropic_bedrock.AI_PROMPT}"

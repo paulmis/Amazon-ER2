@@ -8,7 +8,7 @@ import base64
 from .models import Comment, LLM_Result
 from sqlalchemy.orm import load_only, defer
 from .analyzer import *
-from .ai.interface import analyze_comments, cluster_llm_results, generate_image
+from .ai.interface import analyze_comments, cluster_llm_results, generate_image, get_highlight
 import time
 import os
 
@@ -242,6 +242,7 @@ def get_issues():
 def get_reviews_in_cluster():
     queries = []
     cluster_name = None
+    print(request.args)
     for i in request.args:
         if i == "cluster_name":
             cluster_name = request.args[i]
@@ -273,3 +274,17 @@ def get_image():
     return Response(
         image_binary, mimetype="image/png"
     )  # Or 'image/jpeg' depending on your image format
+
+@app.route("/highlight", methods=["POST"])
+def highlight():
+    # Gets a product review text and a issue name and returns a segment of the text
+    
+    product_review = request.json.get("product_review")
+    issue = request.json.get("issue")
+    if not product_review:
+        return jsonify({"error": "No product review provided"}), 400
+    if not issue:
+        return jsonify({"error": "No issue provided"}), 400
+    
+    highlight = get_highlight(product_review, issue)
+    return jsonify({"highlight": highlight})
