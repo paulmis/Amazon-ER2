@@ -135,9 +135,13 @@ export default function Home() {
                       }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
-                      <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`}>
+                    {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`}>
                         {product.value}
-                      </Link>
+                      </Link> :
+                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                          {product.value}
+                        </Button>
+                      }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
                       {product.llm_result_count > 0 ?
