@@ -71,11 +71,12 @@ def get_products():
     return jsonify({"products": list(map(_merge_comment_and_llm, products))})
 
 
-def _aggregate_unique_helper(field, value, page, count):
+def _aggregate_unique_helper(field, value, page, count, query):
     vals = (
         Comment.query.with_entities(field, func.count(field))
-        .outerjoin(LLM_Result)
+        .filter_by(**query)
         .filter(field.ilike(value))
+        .outerjoin(LLM_Result)
         .group_by(field)
         .order_by(func.sum(LLM_Result.issue_count).desc())
         .paginate(page=page, per_page=count)
@@ -118,10 +119,11 @@ def aggregate_unique():
     field = request.args.get("field", None)
     search_value = "%" + request.args.get("query", "") + "%"
 
+    query = {x[0] : x[1] for x in request.args.items() if x[0] not in ['page', 'count', 'field', 'query']}
     if field == "product":
-        vals = _aggregate_unique_helper(Comment.product, search_value, page, count)
+        vals = _aggregate_unique_helper(Comment.product, search_value, page, count, query)
     elif field == "brand":
-        vals = _aggregate_unique_helper(Comment.brand, search_value, page, count)
+        vals = _aggregate_unique_helper(Comment.brand, search_value, page, count, query)
     else:
         return jsonify([])
 
