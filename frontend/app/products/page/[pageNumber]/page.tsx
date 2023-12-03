@@ -19,14 +19,8 @@ import { Product } from "@/app/models/product";
 import useSWR from "swr";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
+import { getProductNames } from "@/lib/products";
 
-export async function fetcher<JSON = any>(
-  input: RequestInfo,
-  init?: RequestInit
-): Promise<JSON> {
-  const res = await fetch(input, init)
-  return res.json()
-}
 
 
 export default function Home() {
@@ -43,12 +37,13 @@ export default function Home() {
   // copy the same c array 10 times
   for (let i = 0; i < 3; i++) c.push(...c);
 
-  var { data, error, isLoading } = useSWR(`http://localhost:5000/aggregate_unique?page=${page}`, fetcher);
+  var { data, error, isLoading } = getProductNames(Number(page));
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error</div>
+  if (!data) return <div>Product names not found</div>
 
-  const products = data as string[];
-  console.log(data);
+  var productNames: string[] = data;
+
 
   const request = () => {/*TODO*/ }
   return (
@@ -56,7 +51,7 @@ export default function Home() {
       <Head>
         <title> LauzHack 2023</title>
       </Head>
-      <main className="flex min-h-screen flex-col w-full p-16">
+      <main className="flex min-h-screen flex-col w-full p-16 p-[0.37rem]">
         <div className="flex items-center justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
             <Input placeholder="Search" className="w-[50%]"></Input>
@@ -75,8 +70,8 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product, index) => (
-                  <TableRow key={index}>
+                {productNames.map((product, index) => (
+                  <TableRow key={index} >
                     <TableCell>
                       <Button variant="ghost" onClick={request} disabled={c[index] != "Request"}>{
                         c[index] == "Active" ? "Active" :

@@ -1,18 +1,17 @@
-// class Product(db.Model):
-//     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-//     Product_Name = db.Column(db.String(255))
-//     Brand_Name = db.Column(db.String(255))
-//     Price = db.Column(db.Float)
-//     Rating = db.Column(db.Integer)
-//     Reviews = db.Column(db.Text)
-//     Review_Votes = db.Column(db.Integer)
+// id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+//     product: str = db.Column(db.String(255), index=True)
+//     brand: str = db.Column(db.String(255), index=True)
+//     price: float = db.Column(db.Float)
+//     rating: int = db.Column(db.Integer)
+//     review: str = db.Column(db.Text)
+//     votes: int = db.Column(db.Integer)
 
 export interface Product {
     id: number;
-    Product_Name: string;
-    Brand_Name: string;
-    Price: number;
-    Rating: number;
-    Reviews: string[];
-    Review_Votes: number[];
+    product: string;
+    brand: string;
+    price: number;
+    rating: number;
+    review: string;
+    votes: number;
 }
