@@ -85,7 +85,7 @@ export default function Home() {
     } finally {
       setIsRequesting(false);
       // Invalidate the swr
-      mutate(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`);
+      mutate(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}${brandQuery}`);
     }
   }
 
