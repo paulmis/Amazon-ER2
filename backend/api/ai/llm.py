@@ -6,12 +6,14 @@ import os
 from functools import lru_cache
 from ..models import LLM_Cache
 from .. import db, app
+
 client = AnthropicBedrock(
     aws_access_key=os.environ["AWS_ACCESS_KEY_ID"],
     aws_secret_key=os.environ["AWS_SECRET_ACCESS_KEY"],
 )
 
 from sqlalchemy.exc import IntegrityError
+
 
 @lru_cache(maxsize=None)
 def llm_wrapper(text: str) -> str:
@@ -36,5 +38,3 @@ def llm_wrapper(text: str) -> str:
             db.session.rollback()
             # Handle the race condition here by re-querying the database
             return LLM_Cache.query.filter_by(text_prompt=text).first().llm_response
-
-

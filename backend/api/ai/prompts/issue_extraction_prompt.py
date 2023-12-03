@@ -27,5 +27,8 @@ issue_extraction_prompt = """
     Very important! Always use 2 or 3 words for the issue name.
 """
 
-def create_issue_extraction_prompt(product_name: str, comment: str, system_prompt: str = issue_extraction_prompt):
+
+def create_issue_extraction_prompt(
+    product_name: str, comment: str, system_prompt: str = issue_extraction_prompt
+):
     return f"{anthropic_bedrock.HUMAN_PROMPT} {system_prompt}\n\n This is the product name: {product_name}\n\n This is the comment: {comment} {anthropic_bedrock.AI_PROMPT}"

@@ -7,8 +7,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy.exc import IntegrityError
 from ..models import Embedding_Cache
 from .. import app, db
+
 boto3_bedrock = bedrock.get_bedrock_client(
-    region='us-east-1',
+    region="us-east-1",
 )
 
 
@@ -22,7 +23,9 @@ def get_embedding(text: str):
             return cached_embedding.embedding
 
         # Generate embedding if not cached
-        bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=boto3_bedrock)
+        bedrock_embeddings = BedrockEmbeddings(
+            model_id="amazon.titan-embed-text-v1", client=boto3_bedrock
+        )
         embedding = bedrock_embeddings.embed_query(text)
 
         # Cache the new embedding
@@ -44,11 +47,10 @@ def get_similarity(text1: str, text2: str):
     embedding2 = get_embedding(text2)
     return np.dot(embedding1, embedding2)
 
+
 def generate_embeddings_parallel(texts: list) -> np.ndarray:
     """Generate embeddings for a list of text strings in parallel"""
     with ThreadPoolExecutor() as executor:
         embeddings = list(executor.map(get_embedding, texts))
 
     return np.array(embeddings)
-
-    
