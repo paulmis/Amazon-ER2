@@ -23,7 +23,7 @@ interface brandInfo {
 
 export default function Home() {
 
-  var { data: brands, isLoading, error } = useSWR<brandInfo[]>(`http://localhost:5000/aggregate_unique?field=brand&page=1&count=30`, fetcher);
+  var { data: brands, isLoading, error } = useSWR<brandInfo[]>(`http://localhost:5000/aggregate_unique?field=brand&page=1&count=200`, fetcher);
 
   if (isLoading || !brands) return <div>Loading...</div>
   if (error) return <div>Error </div>
@@ -32,10 +32,6 @@ export default function Home() {
   const sum = brands.reduce((a, b) => a + b.total_count, 0);
 
   brands = [{value: "All brands", total_count: sum, llm_result_count: 0}, ...brands]
-
-  //sort by brand.total_count
-  brands.sort((a, b) => b.total_count - a.total_count);
-  console.log(brands.length);
 
   return (
     <>

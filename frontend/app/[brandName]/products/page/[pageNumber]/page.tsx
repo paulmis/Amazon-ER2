@@ -129,16 +129,16 @@ export default function Home() {
                     <TableCell className="py-[0.39rem]">
                       {
                         isRequesting && product.llm_result_count == -1 ? <CircularProgress className="ml-7" isIndeterminate size="24px" /> :
-                          <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                          <Button variant="ghost" className = "px-0" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
                             {product.llm_result_count != 0 ? "Active" : "Request"}
                           </Button>
                       }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
-                    {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`}>
+                    {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`} className="px-0">
                         {product.value}
                       </Link> :
-                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0} className="px-0">
                           {product.value}
                         </Button>
                       }
