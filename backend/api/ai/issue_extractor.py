@@ -146,30 +146,18 @@ def cluster_issues_for_reviews(product_reviews: pd.DataFrame):
 
     # OPTICS Clustering
     clustering = OPTICS(
-        metric="cosine", min_samples=min(5, len(embeddings_issue_names))
+        metric="cosine", min_samples=min(4, len(embeddings_issue_names))
     ).fit(embeddings_issue_names)
     labels = clustering.labels_
 
     # We group the issues by cluster
     clusters = {}
-    noise_elements = {}  # Dictionary to hold noise elements
     for i, label in enumerate(labels):
         if label == -1:
-            # Handling noise elements
-            issue_name = issues[i]["issue"]
-            if issue_name not in noise_elements:
-                noise_elements[issue_name] = []
-            noise_elements[issue_name].append(issues[i])
             continue
         if label not in clusters:
             clusters[label] = []
         clusters[label].append(issues[i])
-
-    # Assign new clusters to noise elements
-    max_cluster_label = max(clusters.keys(), default=-1)
-    for issue_name, issue_group in noise_elements.items():
-        max_cluster_label += 1
-        clusters[max_cluster_label] = issue_group
 
     # For each cluster, we give it a name (in parallel)
     clusters_issues = {}

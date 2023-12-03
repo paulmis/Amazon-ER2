@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
 import { redirect, useParams, usePathname, useSearchParams } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { get } from "http";
@@ -112,7 +112,8 @@ export default function Home() {
       console.error('Error sending API request:', error);
     } finally {
       setIsRequesting(false);
-      window.location.reload();
+      // Invalidate the swr
+      mutate(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`);
     }
   }
 
