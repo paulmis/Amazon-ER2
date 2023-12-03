@@ -55,31 +55,21 @@ def generate_image(text: str) -> str:
     """Generates an image from a text string and returns the image as a base64 encoded string."""
     prompt = text
     negative_prompts = []
-    style_preset = "photographic"  # (e.g. photographic, digital-art, cinematic, ...)
-    clip_guidance_preset = (
-        "FAST_GREEN"  # (e.g. FAST_BLUE FAST_GREEN NONE SIMPLE SLOW SLOWER SLOWEST)
-    )
-    sampler = "K_DPMPP_2S_ANCESTRAL"  # (e.g. DDIM, DDPM, K_DPMPP_SDE, K_DPMPP_2M, K_DPMPP_2S_ANCESTRAL, K_DPM_2, K_DPM_2_ANCESTRAL, K_EULER, K_EULER_ANCESTRAL, K_HEUN, K_LMS)
-    width = 768
+
     request = json.dumps(
         {
             "text_prompts": (
-                [{"text": prompt, "weight": 1.0}]
+                [{"text": prompt, "weight": 30.0}]
                 + [
                     {"text": negprompt, "weight": -1.0}
                     for negprompt in negative_prompts
                 ]
             ),
-            "cfg_scale": 5,
-            "seed": 452345,
+            "seed": 0,
             "steps": 50,
-            "style_preset": style_preset,
-            "clip_guidance_preset": clip_guidance_preset,
-            "sampler": sampler,
-            "width": width,
         }
     )
-    modelId = "stability.stable-diffusion-xl"
+    modelId = "stability.stable-diffusion-xl-v1"
 
     response = boto3_bedrock.invoke_model(body=request, modelId=modelId)
     response_body = json.loads(response.get("body").read())
