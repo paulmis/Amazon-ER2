@@ -42,38 +42,6 @@ export function Badge({ color, text }: BadgeProps) {
 }
 
 
-const ReloadAfterApiRequestButton = ({ product }: { product: string }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchDataAndReload = async () => {
-    try {
-      setIsLoading(true);
-
-
-      // Send an API request
-      const response = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product)}`);
-
-      // Handle the response if needed
-
-      // Reload the page
-    } catch (error) {
-      console.error('Error sending API request:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <button onClick={fetchDataAndReload} disabled={isLoading}>
-        {isLoading ? 'Loading...' : 'Send API Request and Reload'}
-      </button>
-    </div>
-  );
-};
-
-
-
 export default function Home() {
 
   const page = useParams().pageNumber;

@@ -1,6 +1,5 @@
 "use client";
 
-import Review from "@/app/models/review";
 import { redirect, usePathname } from "next/navigation";
 
 // product/{product.id}/issue/{issue.id}
@@ -12,11 +11,6 @@ export default function ProductIssuePage() {
   if (isNaN(Number(id))) {
     redirect("/404");
   }
-
-  const reviews: Review[] = [
-    { id: 1, review: "Bad microphone", highlights: [0], rating: 5 },
-    { id: 2, review: "This is a really bad microphone", highlights: [3, 4], rating: 3 }
-  ]
 
   return (
     <>

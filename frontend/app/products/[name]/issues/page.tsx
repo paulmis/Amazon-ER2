@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Link } from "@chakra-ui/react";
+import { Image, Link } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IssueCluster } from "@/app/models/models";
 import WordCloudUI from "@/components/wordCloud";
@@ -100,8 +100,9 @@ export function ProductIssuePage({ name }: { name: string }) {
               })}
             </TableBody>
           </Table>
-          <div className="w-[50%]">
-           <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
+          <div className="flex flex-col w-[50%]">
+            <Image src={`http://localhost:5000/image?product=${encodeURIComponent(name)}`}></Image>
+            <WordCloudUI data = { clusters.map(cluster => ({ text: cluster.name, value: cluster.item_count * 3 }))}></WordCloudUI>
 
           </div>
         </div>
