@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from flask import jsonify, request
 from . import app, db
 from .models import Comment, LLM_Result
@@ -9,6 +10,19 @@ import time
 ROWS_PER_PAGE = 100
 
 row_to_json = lambda row: {column: getattr(row, column) for column in row.__table__.c.keys()}
+
+def _merge_comment_and_llm(t):
+    comment = row_to_json(t[0])
+    if t[1]:
+        llm_result = row_to_json(t[1])
+        for j in llm_result['issues']:
+            if 'embedding' in j:
+                j.pop('embedding')
+
+        comment['llm_result'] = llm_result
+
+    return comment
+
 
 @app.route('/query', methods=['GET'])
 def get_products():
@@ -25,7 +39,7 @@ def get_products():
 
     products = Comment.query.filter_by(**search_dict).paginate(page=page, per_page=count)
 
-    return jsonify({'products': list(map(row_to_json, products))})
+    return jsonify({'products': list(map(_merge_comment_and_llm, products))})
 
 @app.route('/aggregate_unique', methods=['GET'])
 def aggregate_unique():
@@ -34,18 +48,31 @@ def aggregate_unique():
 
     field = request.args.get('field', None)
     if field == 'product':
-        vals = Comment.query.group_by(Comment.product).paginate(page=page, per_page=count)
-        unique_vals = [val.product for val in vals]
+        vals = Comment.query.with_entities(Comment.product, func.count(Comment.product)).group_by(Comment.product).paginate(page=page, per_page=count)
+        unique_vals = [{'value': x[0], 'total_count': x[1]} for x in vals]
 
-        return jsonify({'values': unique_vals})
+        llm_vals = Comment.query.with_entities(Comment.product, func.count(Comment.product)).join(LLM_Result).group_by(Comment.product).paginate(page=page, per_page=count)
+
+        llm_counts = {x[0]: x[1] for x in llm_vals}
+
+        for i in unique_vals:
+            i['llm_result_count'] = llm_counts.get(i['value'], 0)
+
+        return jsonify(unique_vals)
     elif field == 'brand':
-        vals = Comment.query.group_by(Comment.brand).outerjoin(Comment.llm_result).paginate(page=page, per_page=count)
+        vals = Comment.query.with_entities(Comment.brand, func.count(Comment.brand)).group_by(Comment.brand).paginate(page=page, per_page=count)
+        unique_vals = [{'value': x[0], 'total_count': x[1]} for x in vals]
 
-        unique_vals = [val.brand for val in vals]
+        llm_vals = Comment.query.with_entities(Comment.brand, func.count(Comment.brand)).join(LLM_Result).group_by(Comment.brand).paginate(page=page, per_page=count)
 
-        return jsonify({'values': unique_vals})
+        llm_counts = {x[0]: x[1] for x in llm_vals}
+
+        for i in unique_vals:
+            i['llm_result_count'] = llm_counts.get(i['value'], 0)
+
+        return jsonify(unique_vals)
     else:
-        return jsonify({})
+        return jsonify([])
 
 def _get_comment_with_id(search_result, id):
     for i in search_result:
@@ -91,7 +118,7 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
     for i in clusters:
         tmp = {
             "name": i,
-            "item_count": len(clusters[i])
+            "item_count": len(set([x[0] for x in clusters[i]]))
         }
 
         for j in clusters[i]:
@@ -105,7 +132,7 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
 def get_all_reviews_in_cluster(query_dicts, cluster_name, granularity=1):
     res = []
     for query_dict in query_dicts:
-        res += db.session.query(Comment, LLM_Result).filter_by(**query_dict).outerjoin(LLM_Result).all()
+        res += db.session.query(Comment, LLM_Result).filter_by(**query_dict).join(LLM_Result).all()
 
     llm_results = list(filter(lambda x: x, map(lambda x: x[0].llm_result, res)))
     clusters = cluster_llm_results(llm_results)
@@ -113,12 +140,20 @@ def get_all_reviews_in_cluster(query_dicts, cluster_name, granularity=1):
     if cluster_name not in clusters:
         return []
 
-    reviews = []
+    reviews = {}
 
     for i in clusters[cluster_name]:
-        reviews.append(row_to_json(_get_comment_with_id(res, i[0].comment_id)))
+        comment = row_to_json(_get_comment_with_id(res, i[0].comment_id))
+        llm_result = row_to_json(i[0])
 
-    return reviews
+        for j in llm_result['issues']:
+            if 'embedding' in j:
+                j.pop('embedding')
+
+        comment['llm_result'] = llm_result
+        reviews[comment['id']] = comment
+
+    return list(reviews.values())
 
 @app.route('/issues', methods=['GET'])
 def get_issues():
