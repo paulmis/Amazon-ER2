@@ -1,5 +1,8 @@
 from sqlalchemy import func
 from flask import jsonify, request, redirect, make_response, Response
+from sqlalchemy.sql import False_
+from sqlalchemy.sql.operators import or_
+from flask import jsonify, request
 from . import app, db
 import base64
 from .models import Comment, LLM_Result
@@ -14,17 +17,34 @@ ROWS_PER_PAGE = 100
 
 row_to_json = lambda row: {column: getattr(row, column) for column in row.__table__.c.keys()}
 
+def _make_llm_behave(l):
+    llm_result = row_to_json(l)
+    for j in llm_result['issues']:
+        if 'embedding' in j:
+            j.pop('embedding')
+
+    return llm_result
+
 def _merge_comment_and_llm(t):
     comment = row_to_json(t[0])
     if t[1]:
-        llm_result = row_to_json(t[1])
-        for j in llm_result['issues']:
-            if 'embedding' in j:
-                j.pop('embedding')
-
-        comment['llm_result'] = llm_result
+        comment['llm_result'] = _make_llm_behave(t[1])
 
     return comment
+
+def _get_issue_severities_from_comment_ids(comment_ids):
+    filter = False_()
+    for i in comment_ids:
+        filter = or_(i == LLM_Result.comment_id, filter)
+
+    res = LLM_Result.query.filter(filter).all()
+    severities = {}
+    for i in res:
+        for j in i.issues:
+            s = j['severity']
+            severities[s] = severities.get(s, 0) + 1
+
+    return severities
 
 
 @app.route('/query', methods=['GET'])
@@ -44,38 +64,42 @@ def get_products():
 
     return jsonify({'products': list(map(_merge_comment_and_llm, products))})
 
+def _aggregate_unique_helper(field, value, page, count):
+    vals = Comment.query.with_entities(field, func.count(field)).filter(field.ilike(value)).group_by(field).paginate(page=page, per_page=count)
+    unique_vals = [{'value': x[0], 'total_count': x[1]} for x in vals]
+
+    llm_vals = Comment.query.with_entities(field, func.count(field)).join(LLM_Result).group_by(field).paginate(page=page, per_page=count)
+
+    llm_counts = {x[0]: x[1] for x in llm_vals}
+
+    for i in unique_vals:
+        lc = llm_counts.get(i['value'], 0)
+
+        if lc > 0:  # Aggregate issue severities if they have aready been put through the LLM
+            vals = Comment.query.with_entities(Comment.id).filter(field.__eq__(i['value'])).all()
+            ids = list(map(lambda x: x[0], vals))
+            i['severities'] = _get_issue_severities_from_comment_ids(ids)
+
+        i['llm_result_count'] = llm_counts.get(i['value'], 0)
+
+    return unique_vals
+
 @app.route('/aggregate_unique', methods=['GET'])
 def aggregate_unique():
     page = request.args.get('page', 1, type=int)
     count = request.args.get('count', ROWS_PER_PAGE, type=int)
 
     field = request.args.get('field', None)
+    search_value = '%' + request.args.get('query', '') + '%'
+
     if field == 'product':
-        vals = Comment.query.with_entities(Comment.product, func.count(Comment.product)).group_by(Comment.product).paginate(page=page, per_page=count)
-        unique_vals = [{'value': x[0], 'total_count': x[1]} for x in vals]
-
-        llm_vals = Comment.query.with_entities(Comment.product, func.count(Comment.product)).join(LLM_Result).group_by(Comment.product).paginate(page=page, per_page=count)
-
-        llm_counts = {x[0]: x[1] for x in llm_vals}
-
-        for i in unique_vals:
-            i['llm_result_count'] = llm_counts.get(i['value'], 0)
-
-        return jsonify(unique_vals)
+        vals = _aggregate_unique_helper(Comment.product, search_value, page, count)
     elif field == 'brand':
-        vals = Comment.query.with_entities(Comment.brand, func.count(Comment.brand)).group_by(Comment.brand).paginate(page=page, per_page=count)
-        unique_vals = [{'value': x[0], 'total_count': x[1]} for x in vals]
-
-        llm_vals = Comment.query.with_entities(Comment.brand, func.count(Comment.brand)).join(LLM_Result).group_by(Comment.brand).paginate(page=page, per_page=count)
-
-        llm_counts = {x[0]: x[1] for x in llm_vals}
-
-        for i in unique_vals:
-            i['llm_result_count'] = llm_counts.get(i['value'], 0)
-
-        return jsonify(unique_vals)
+        vals = _aggregate_unique_helper(Comment.brand, search_value, page, count)
     else:
         return jsonify([])
+
+    return jsonify(vals)
 
 def _get_comment_with_id(search_result, id):
     for i in search_result:
@@ -121,7 +145,8 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
     for i in clusters:
         tmp = {
             "name": i,
-            "item_count": len(set([x[0] for x in clusters[i]]))
+            "item_count": len(set([x[0] for x in clusters[i]])),
+            "issues": [_make_llm_behave(x[0])['issues'][x[1]] for x in clusters[i]]
         }
 
         severities = {}
