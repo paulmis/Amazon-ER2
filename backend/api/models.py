@@ -31,3 +31,21 @@ class Comment(db.Model):
         self.rating = rating
         self.review = review
         self.votes = votes
+
+class LLM_Cache(db.Model):
+    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    text_prompt: str = db.Column(db.Text, unique=True, nullable=False)
+    llm_response: str = db.Column(db.Text, nullable=False)
+
+    def __init__(self, text_prompt, llm_response):
+        self.text_prompt = text_prompt
+        self.llm_response = llm_response
+
+class Embedding_Cache(db.Model):
+    id: Mapped[int] = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    text: Mapped[str] = db.Column(db.Text, unique=True, nullable=False)
+    embedding: Mapped[Any] = db.Column(PickleType, nullable=False)
+
+    def __init__(self, text, embedding):
+        self.text = text
+        self.embedding = embedding

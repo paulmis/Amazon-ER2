@@ -5,3 +5,4 @@ langchain
 anthropic_bedrock
 pandas
 scikit-learn
+flask-cors
