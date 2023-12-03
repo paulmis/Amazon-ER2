@@ -53,7 +53,7 @@ export default function Home() {
   const searchQuery = useSearchParams().get("search") ?? "";
   const [search, setSearch] = useState<string>(searchQuery);
   const [isRequesting, setIsRequesting] = useState<boolean>(false);
-  const [graphicData, setGraphicData] = useState(defaultGraphicData);
+  const [graphicData, setGraphicData] = useState<any>(defaultGraphicData);
 
   useEffect(() => {
     setGraphicData(wantedGraphicData); // Setting the data that we want to display
@@ -80,8 +80,14 @@ export default function Home() {
     event.preventDefault();
   }
 
-  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}${brandQuery}`, fetcher);
-
+  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=10&query=${search}${brandQuery}`, fetcher);
+  useEffect(() => {
+    // Update pie chart with new data, we get the severity count from the products array
+    // Sum of severities for each product if null then 0
+    console.log(products?.reduce((acc, curr) => acc + (curr?.severities?.low ?? 0), 0) ?? 0);
+    setGraphicData([{"x": "low", "y": products?.reduce((acc, curr) => acc + (curr?.severities?.low ?? 0), 0) ?? 0 }, { "x": "medium", "y": products?.reduce((acc, curr) => acc + (curr?.severities?.medium ?? 0), 0) ?? 0 }, { "x": "high", "y": products?.reduce((acc, curr) => acc + (curr?.severities?.high ?? 0), 0) ?? 0 }]);
+  }
+    , [products]);
   if (error) return <div>Error</div>
 
   const handleClick = (product: productInfo) => async () => {
@@ -95,9 +101,11 @@ export default function Home() {
     } finally {
       setIsRequesting(false);
       // Invalidate the swr
-      mutate(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}${brandQuery}`);
+      mutate(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=10&query=${search}${brandQuery}`);
     }
   }
+
+
 
   return (
     <>
@@ -156,13 +164,13 @@ export default function Home() {
                 ))}
               </TableBody>
             </Table>
-            <div><VictoryPie
+            <div>{products == undefined || graphicData[0]['y'] == 0 || graphicData[1]['y'] == 0  || graphicData[2]['y'] == 0? <div></div> :<VictoryPie
               colorScale={pieColors}
               data={graphicData}
               height={400}
               width={400}
               animate={{  duration: 4000, easing: 'exp' }}
-            /></div>
+            />}</div>
           </div>
         </div>
       </main>
