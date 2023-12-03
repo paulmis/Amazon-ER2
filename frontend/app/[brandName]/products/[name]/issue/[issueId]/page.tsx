@@ -13,10 +13,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-// product/{product.id}/issue/{issue.id}
+import Header from "@/components/ui/header";
+// url/brandName/product/{product.name}/issue/{issue.id}
 export default function ProductIssuePage() {
-  const productName = usePathname().split("/")[2];
-  const clusterName = usePathname().split("/")[4];
+  const brandName = usePathname().split("/")[1];
+  const productName = usePathname().split("/")[3];
+  const clusterName = usePathname().split("/")[5];
   const [loading, setLoading] = useState<boolean>(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [highlights, setHighlights] = useState<string[]>([]);
@@ -56,36 +58,20 @@ export default function ProductIssuePage() {
 
   return (
     <>
-      <main className="flex min-h-screen flex-col w-full p-8">
+      <Header/>
+      <main className="flex min-h-screen flex-col w-full p-8 pt-20">
         <div className="flex justify-center">
-          <div className="flex flex-row items-center w-[80%]">
-            <Link
-              color="rgb(26, 13, 171)"
-              href={`/products/${productName}/issues`}
-              className="text-xl py-2 w-[200px]"
-              style={{ whiteSpace: "nowrap" }}
-            >
-              Product
-            </Link>
+          <div className="flex flex-row items-center w-[80%] pb-10">
             <div className="px-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
             </div>
+            <Link href={`/${brandName}/products/${productName}/issues`} className="text-xl py-2 w-[200px]" style={{ whiteSpace: "nowrap" }}>All brands</Link>
             <div className="text-xl py-2">{decodeURIComponent(clusterName)}</div>
           </div>
         </div>
+
         <div className="flex flex-row h-full p-4 content-center justify-center">
           <Table>
             <TableHeader>

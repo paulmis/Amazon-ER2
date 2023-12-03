@@ -23,7 +23,7 @@ interface brandInfo {
 
 export default function Home() {
 
-  var { data: brands, isLoading, error } = useSWR<brandInfo[]>(`http://localhost:5000/aggregate_unique?field=brand&page=1&count=200`, fetcher);
+  var { data: brands, isLoading, error } = useSWR<brandInfo[]>(`http://localhost:5000/aggregate_unique?field=brand&page=1&count=30`, fetcher);
 
   if (isLoading || !brands) return <div>Loading...</div>
   if (error) return <div>Error </div>
