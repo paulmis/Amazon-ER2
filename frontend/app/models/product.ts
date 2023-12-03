@@ -6,7 +6,7 @@
 //     review: str = db.Column(db.Text)
 //     votes: int = db.Column(db.Integer)
 
-export interface Product {
+export interface Comment {
     id: number;
     product: string;
     brand: string;

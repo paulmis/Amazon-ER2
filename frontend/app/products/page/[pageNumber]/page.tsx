@@ -15,16 +15,25 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
 import { redirect, usePathname } from "next/navigation";
-import { Product } from "@/app/models/product";
 import useSWR from "swr";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import { getProductNames } from "@/lib/products";
+import Issue from "@/app/models/issues";
+import ProductIssue from '../../../models/productIssues';
+import { get } from "http";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { fetcher } from "@/lib/products";
 
 
 export interface BadgeProps {
   color: string
   text: string
+}
+
+export interface productInfo {
+  value: string,
+  llm_result_count: number,
+  total_count: number,
 }
 
 export function Badge({ color, text} : BadgeProps) {
@@ -50,13 +59,12 @@ export default function Home() {
   // copy the same c array 10 times
   for (let i = 0; i < 3; i++) c.push(...c);
 
-  var { data, error, isLoading } = getProductNames(Number(page));
-  if (isLoading) return <div>Loading...</div>
+  const allIsues: Issue[] = []
+
+  const {data: products, isLoading, error} =  useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=20`, fetcher);
+
+  if (isLoading || !products) return <div>Loading...</div>
   if (error) return <div>Error</div>
-  if (!data) return <div>Product names not found</div>
-
-  var productNames: string[] = data;
-
 
   const request = () => {/*TODO*/ }
   return (
@@ -80,7 +88,7 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {productNames.map((product, index) => (
+                {products.map((product, index) => (
                   <TableRow key={index} >
                     <TableCell>
                       <Button variant="ghost" onClick={request} disabled={c[index] != "Request"}>{
@@ -89,12 +97,13 @@ export default function Home() {
                             <CircularProgress isIndeterminate color='gray' size={30} />
                       }</Button>
                     </TableCell>
-                    <TableCell>{product}</TableCell>
+                    <TableCell>{product.value}</TableCell>
                     <TableCell>
                       <div className="flex flex-row">
-                        <Badge color="#d13212" text="3"/>
-                        <Badge color="#ebce38" text="12"/>
-                        <Badge color="#1d8102" text="8"/>
+                        <Badge color="#3b81d1" text={product.total_count.toString()}/>
+                        <Badge color="#d13212" text={product.total_count.toString()}/>
+                        <Badge color="#ebce38" text={product.total_count.toString()}/>
+                        <Badge color="#1d8102" text={product.total_count.toString()}/>
                       </div>
                     </TableCell>
                   </TableRow>
