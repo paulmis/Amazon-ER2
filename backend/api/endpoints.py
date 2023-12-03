@@ -37,20 +37,13 @@ def _merge_comment_and_llm(t):
 
 
 def _get_issue_severities_from_comment_ids(comment_ids):
-    FILTER_SIZE_MAX = 200
+    res = LLM_Result.query.filter(LLM_Result.comment_id.in_(comment_ids)).all()
+
     severities = {"high": 0, "medium": 0, "low": 0}
-
-    for i in range(0, len(comment_ids), FILTER_SIZE_MAX):
-        filter = False_()
-        for i in comment_ids[i:min(i+FILTER_SIZE_MAX, len(comment_ids))]:
-            filter = or_(i == LLM_Result.comment_id, filter)
-
-        res = LLM_Result.query.filter(filter).all()
-
-        for i in res:
-            for j in i.issues:
-                s = j["severity"]
-                severities[s] = severities.get(s, 0) + 1
+    for i in res:
+        for j in i.issues:
+            s = j["severity"]
+            severities[s] = severities.get(s, 0) + 1
 
     return severities
 
