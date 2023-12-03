@@ -8,13 +8,13 @@ issue_extraction_prompt = """
             {
                 "issue": "issue name",
                 "confidence": 0.5,
-                "severity": "low",  # low, medium, high
+                "severity": 0.3,
                 "comment": "comment text"
             },
             {
                 "issue": "issue name",
                 "confidence": 0.5,
-                "severity": "high",
+                "severity": 0.9,
                 "comment": "comment text"
             }
         ]
