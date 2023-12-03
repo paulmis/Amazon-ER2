@@ -121,9 +121,13 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
             "item_count": len(set([x[0] for x in clusters[i]]))
         }
 
+        severities = {}
         for j in clusters[i]:
             if (foo := _get_comment_with_id(res, j[0].comment_id)):
                 tmp["example"] = row_to_json(foo)
+            s = j[0].issues[j[1]]['severity']
+            severities[s] = severities.get(s, 0) + 1
+        tmp['severities'] = severities
         final_result.append(tmp)
                 
 
