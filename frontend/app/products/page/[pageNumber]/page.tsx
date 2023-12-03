@@ -82,23 +82,23 @@ export default function Home() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[4%]">Status</TableHead>
-                  <TableHead className="w-[25%]">Product</TableHead>
-                  <TableHead className="w-[4%]">Issues</TableHead>
+                <TableHead className="w-[3%]">Status</TableHead>
+                  <TableHead className="w-[28%]">Product</TableHead>
+                  <TableHead className="w-[3%]">Issues</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((product, index) => (
-                  <TableRow key={index} >
-                    <TableCell>
+                  <TableRow key={index}>
+                    <TableCell className="py-[0.39rem]">
                       <Button variant="ghost" onClick={request} disabled={c[index] != "Request"}>{
                         c[index] == "Active" ? "Active" :
                           c[index] == "Request" ? "Request" :
                             <CircularProgress isIndeterminate color='gray' size={30} />
                       }</Button>
                     </TableCell>
-                    <TableCell>{product.value}</TableCell>
-                    <TableCell>
+                    <TableCell className="py-[0.39rem]">{product.value}</TableCell>
+                    <TableCell className="py-[0.39rem]">
                       <div className="flex flex-row">
                         <Badge color="#3b81d1" text={product.total_count.toString()}/>
                         <Badge color="#d13212" text={product.total_count.toString()}/>
