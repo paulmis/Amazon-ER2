@@ -23,6 +23,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
 import { useState } from "react";
+import ProductIssue from '@/app/models/productIssues';
 
 
 export interface BadgeProps {
@@ -40,11 +41,45 @@ export function Badge({ color, text }: BadgeProps) {
   </div>
 }
 
+
+const ReloadAfterApiRequestButton = ({ product }: { product: string }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchDataAndReload = async () => {
+    try {
+      setIsLoading(true);
+
+
+      // Send an API request
+      const response = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product)}`);
+
+      // Handle the response if needed
+
+      // Reload the page
+    } catch (error) {
+      console.error('Error sending API request:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchDataAndReload} disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Send API Request and Reload'}
+      </button>
+    </div>
+  );
+};
+
+
+
 export default function Home() {
 
   const page = useParams().pageNumber;
   const searchQuery = useSearchParams().get("search") ?? "";
   const [search, setSearch] = useState<string>(searchQuery);
+  const [isRequesting, setIsRequesting] = useState<boolean>(false);
 
   if (isNaN(Number(page))) {
     redirect("/404");
@@ -59,15 +94,30 @@ export default function Home() {
   }
 
   // formhanlder on saerch
+
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log(`/products/page/${page}?search=${search}`);
   }
 
   const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`, fetcher);
-  const request = () => {/*TODO*/ }
 
+  if (isLoading || !products) return <div>Loading...</div>
+  if (error) return <div>Error</div>
 
+  const handleClick = (product: ProductIssue) => async () => {
+    setIsRequesting(true);
+    try {
+      product.llm_result_count = -1;
+      const response = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product.value)}`);
+      const data = await response.json();
+    } catch (error) {
+      console.error('Error sending API request:', error);
+    } finally {
+      setIsRequesting(false);
+      window.location.reload();
+    }
+  }
 
   return (
     <>
@@ -95,13 +145,16 @@ export default function Home() {
                 {(products ?? previousData ?? []).map((product, index) => (
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
-                      <Button variant="ghost" onClick={request} disabled={product.llm_result_count != 0}>{
-                        product.llm_result_count != 0 ? "Active" : "Request"
-                      }</Button>
+                      {
+                        isRequesting && product.llm_result_count == -1 ? <CircularProgress className = "ml-7" isIndeterminate size="24px" /> :
+                          <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                            {product.llm_result_count != 0 ? "Active" : "Request"}
+                          </Button>
+                      }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">{product.value}</TableCell>
                     <TableCell className="py-[0.39rem]">
-                      {product.llm_result_count != 0 ?
+                      {product.llm_result_count > 0 ?
                         <div className="flex flex-row">
                           <Badge color="#d13212" text={product.severities.high.toString()} />
                           <Badge color="#ebce38" text={product.severities.medium.toString()} />
