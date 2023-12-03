@@ -36,7 +36,7 @@ export function ProductIssuePage({ name }: { name: string }) {
 
   useEffect(() => {
     fetchCluster(name)
-  })
+  }, [])
 
   return (
     <>
