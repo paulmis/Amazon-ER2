@@ -55,8 +55,8 @@ export default function Home() {
     redirect("/404");
   } else if (typeof brand === "undefined" || typeof brand !== "string") { redirect("/404"); }
   const [previousData, setPreviousData] = useState<productInfo[] | undefined>([]);
+  var brandName = decodeURIComponent(brand), brandQuery = brandName == "All brands" ? "" : "&brand=" + brandName;
 
-  const brandQuery = brand == "All brands" ? "" : "&brand=" + brand;
 
   const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPreviousData(products);
