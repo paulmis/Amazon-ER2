@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import  WordCloud from 'react-d3-cloud';
 
 export async function fetcher<JSON = any>(
   input: RequestInfo,
