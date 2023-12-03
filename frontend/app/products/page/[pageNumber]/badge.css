@@ -1,0 +1,10 @@
+@import url('https://fonts.cdnfonts.com/css/amazon-ember');
+
+.badge {
+    font-family: 'Amazon Ember', sans-serif;
+    border-radius: 6px;
+    width: fit-content;
+    padding: 0 8px;
+    color: white;
+    margin-right: 6px;
+}
