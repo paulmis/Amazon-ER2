@@ -120,7 +120,7 @@ export default function ProductIssuePage() {
                       {[...new Set(cluster.issues.map(issue => issue.issue))].join(", ")}
                     </TableCell>
                     <TableCell className="">
-                      {cluster.item_count}&#160;&#160;&#160;{((cluster.item_count / totalReviews) * 100).toFixed(0)}%
+                      {cluster.item_count}&#160;&#160;{"("}{((cluster.item_count / totalReviews) * 100).toFixed(0)}%{")"}
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
                       {
