@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
+import { Link } from "@chakra-ui/react";
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -49,7 +50,13 @@ export default function ProductIssuePage() {
     <>
       <main className="flex min-h-screen flex-col w-full p-16">
           <div className="flex justify-center">
-            <div className="flex flex-col">
+            <div className="flex flex-row items-center">
+              <Link color='rgb(26, 13, 171)' href="/products/page/1" className="text-xl py-2">All products</Link>
+              <div className="px-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
               <div className="text-xl py-2">Apple iPhone 3GS 8GB Black Factory Unlocked / Not Jailbroken</div>
             </div>
           </div>
