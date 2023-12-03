@@ -8,8 +8,9 @@ from sqlalchemy.exc import IntegrityError
 from ..models import Embedding_Cache
 from .. import app, db
 import logging
-logging.getLogger('boto').setLevel(logging.CRITICAL)
-logging.getLogger('botocore').setLevel(logging.CRITICAL)
+
+logging.getLogger("boto").setLevel(logging.CRITICAL)
+logging.getLogger("botocore").setLevel(logging.CRITICAL)
 boto3_bedrock = bedrock.get_bedrock_client(
     region="us-east-1",
 )

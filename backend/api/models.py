@@ -15,12 +15,14 @@ class LLM_Result(db.Model):
         nullable=False,
     )
     issues: Dict[Any, Any] = db.Column(PickleType)
+    issue_count: int = db.Column(db.Integer)
 
     comment = relationship("Comment", back_populates="llm_result")
 
     def __init__(self, issues, comment_id):
         self.issues = issues
         self.comment_id = comment_id
+        self.issue_count = len(issues)
 
 
 class Comment(db.Model):

@@ -74,8 +74,10 @@ def get_products():
 def _aggregate_unique_helper(field, value, page, count):
     vals = (
         Comment.query.with_entities(field, func.count(field))
+        .outerjoin(LLM_Result)
         .filter(field.ilike(value))
         .group_by(field)
+        .order_by(func.sum(LLM_Result.issue_count).desc())
         .paginate(page=page, per_page=count)
     )
     unique_vals = [{"value": x[0], "total_count": x[1]} for x in vals]
