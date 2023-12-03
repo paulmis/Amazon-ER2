@@ -84,7 +84,7 @@ def _aggregate_unique_helper(field, value, page, count):
         Comment.query.with_entities(field, func.count(field))
         .join(LLM_Result)
         .group_by(field)
-        .paginate(page=page, per_page=count)
+        .all()
     )
 
     llm_counts = {x[0]: x[1] for x in llm_vals}

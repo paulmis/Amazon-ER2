@@ -23,6 +23,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
 import { useState } from "react";
+import ProductIssue from '@/app/models/productIssues';
 
 
 export interface BadgeProps {
@@ -40,11 +41,45 @@ export function Badge({ color, text }: BadgeProps) {
   </div>
 }
 
+
+const ReloadAfterApiRequestButton = ({ product }: { product: string }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchDataAndReload = async () => {
+    try {
+      setIsLoading(true);
+
+
+      // Send an API request
+      const response = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product)}`);
+
+      // Handle the response if needed
+
+      // Reload the page
+    } catch (error) {
+      console.error('Error sending API request:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchDataAndReload} disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Send API Request and Reload'}
+      </button>
+    </div>
+  );
+};
+
+
+
 export default function Home() {
 
   const page = useParams().pageNumber;
   const searchQuery = useSearchParams().get("search") ?? "";
   const [search, setSearch] = useState<string>(searchQuery);
+  const [isRequesting, setIsRequesting] = useState<boolean>(false);
 
   if (isNaN(Number(page))) {
     redirect("/404");
@@ -58,7 +93,6 @@ export default function Home() {
 
   // formhanlder on saerch
   const handleSearch = () => {
-    console.log(search);
     redirect(`/products/page/${page}?search=${search}`);
   }
 
@@ -67,9 +101,19 @@ export default function Home() {
   if (isLoading || !products) return <div>Loading...</div>
   if (error) return <div>Error</div>
 
-  const request = () => {/*TODO*/ }
-
-
+  const handleClick = (product: ProductIssue) => async () => {
+    setIsRequesting(true);
+    try {
+      product.llm_result_count = -1;
+      const response = await fetch(`http://localhost:5000/issues?product=${encodeURIComponent(product.value)}`);
+      const data = await response.json();
+    } catch (error) {
+      console.error('Error sending API request:', error);
+    } finally {
+      setIsRequesting(false);
+      window.location.reload();
+    }
+  }
 
   return (
     <>
@@ -79,7 +123,7 @@ export default function Home() {
       <main className="flex min-h-screen flex-col w-full p-16">
         <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
-            <form action={`/products/page/1/?search=${search}`}  className="w-[40%]" method="get" >
+            <form action={`/products/page/1/?search=${search}`} className="w-[40%]" method="get" >
               <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
             </form>
             <Pagination pageNumber={Number(page)}></Pagination>
@@ -97,13 +141,16 @@ export default function Home() {
                 {products.map((product, index) => (
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
-                      <Button variant="ghost" onClick={request} disabled={product.llm_result_count != 0}>{
-                        product.llm_result_count != 0 ? "Active" : "Request"
-                      }</Button>
+                      {
+                        isRequesting && product.llm_result_count == -1 ? <CircularProgress className = "ml-7" isIndeterminate size="24px" /> :
+                          <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                            {product.llm_result_count != 0 ? "Active" : "Request"}
+                          </Button>
+                      }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">{product.value}</TableCell>
                     <TableCell className="py-[0.39rem]">
-                      {product.llm_result_count != 0 ?
+                      {product.llm_result_count > 0 ?
                         <div className="flex flex-row">
                           <Badge color="#d13212" text={product.severities.high.toString()} />
                           <Badge color="#ebce38" text={product.severities.medium.toString()} />
