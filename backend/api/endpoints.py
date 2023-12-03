@@ -42,7 +42,7 @@ def _get_issue_severities_from_comment_ids(comment_ids):
         filter = or_(i == LLM_Result.comment_id, filter)
 
     res = LLM_Result.query.filter(filter).all()
-    severities = {}
+    severities = {"high": 0, "medium": 0, "low": 0}
     for i in res:
         for j in i.issues:
             s = j["severity"]
@@ -182,7 +182,7 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
             "issues": [_make_llm_behave(x[0])["issues"][x[1]] for x in clusters[i]],
         }
 
-        severities = {}
+        severities = {"high": 0, "medium": 0, "low": 0}
         for j in clusters[i]:
             if foo := _get_comment_with_id(res, j[0].comment_id):
                 tmp["example"] = row_to_json(foo)
