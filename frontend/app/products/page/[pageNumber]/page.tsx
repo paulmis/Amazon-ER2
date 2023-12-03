@@ -2,7 +2,7 @@
 
 import Head from "next/head";
 import "./badge.css"
-import { CircularProgress, CircularProgressLabel, background } from '@chakra-ui/react'
+import { CircularProgress, CircularProgressLabel, background, useQuery } from '@chakra-ui/react'
 
 import {
   Table,
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
-import { redirect, usePathname } from "next/navigation";
+import { redirect, useParams, usePathname, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -22,6 +22,7 @@ import { get } from "http";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
+import { useState } from "react";
 
 
 export interface BadgeProps {
@@ -41,12 +42,24 @@ export function Badge({ color, text }: BadgeProps) {
 
 export default function Home() {
 
-  const page = usePathname().split("/")[3];
+  const page = useParams().pageNumber;
+  const searchQuery = useSearchParams().get("search") ?? "";
+  const [search, setSearch] = useState<string>(searchQuery);
 
   if (isNaN(Number(page))) {
     redirect("/404");
   } else if (Number(page) < 1) {
     redirect("/404");
+  }
+
+  const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  }
+
+  // formhanlder on saerch
+  const handleSearch = () => {
+    console.log(search);
+    redirect(`/products/page/${page}?search=${search}`);
   }
 
   const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5`, fetcher);
@@ -55,6 +68,9 @@ export default function Home() {
   if (error) return <div>Error</div>
 
   const request = () => {/*TODO*/ }
+
+
+
   return (
     <>
       <Head>
@@ -63,7 +79,9 @@ export default function Home() {
       <main className="flex min-h-screen flex-col w-full p-16">
         <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
-            <Input placeholder="Product name" className="w-[40%]"></Input>
+            <form action={`/products/page/1/?search=${search}`}  className="w-[40%]" method="get" >
+              <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
+            </form>
             <Pagination pageNumber={Number(page)}></Pagination>
           </div>
           <div className="px-48">
