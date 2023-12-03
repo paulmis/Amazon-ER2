@@ -23,6 +23,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
 import { useState } from "react";
+import Link from "next/link";
 
 
 export interface BadgeProps {
@@ -124,7 +125,7 @@ export default function Home() {
       <main className="flex min-h-screen flex-col w-full p-16">
         <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
-            <form onSubmit={handleSearch}  className="w-[40%]" method="get" >
+            <form onSubmit={handleSearch} className="w-[40%]" method="get" >
               <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
             </form>
             <Pagination pageNumber={Number(page)}></Pagination>
@@ -143,13 +144,17 @@ export default function Home() {
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
                       {
-                        isRequesting && product.llm_result_count == -1 ? <CircularProgress className = "ml-7" isIndeterminate size="24px" /> :
+                        isRequesting && product.llm_result_count == -1 ? <CircularProgress className="ml-7" isIndeterminate size="24px" /> :
                           <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
                             {product.llm_result_count != 0 ? "Active" : "Request"}
                           </Button>
                       }
                     </TableCell>
-                    <TableCell className="py-[0.39rem]">{product.value}</TableCell>
+                    <TableCell className="py-[0.39rem]">
+                      <Link href={`/products/${encodeURIComponent(product.value)}/issues`}>
+                        {product.value}
+                      </Link>
+                    </TableCell>
                     <TableCell className="py-[0.39rem]">
                       {product.llm_result_count > 0 ?
                         <div className="flex flex-row">

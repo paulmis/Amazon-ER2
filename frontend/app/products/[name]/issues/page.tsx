@@ -1,7 +1,7 @@
 "use client";
 
 import { Comment, IssueCluster } from "@/app/models/models";
-import { redirect, usePathname } from "next/navigation";
+import { redirect, useParams, usePathname } from "next/navigation";
 import { Badge } from "../../page/[pageNumber]/page";
 import {
   Table,
@@ -21,13 +21,9 @@ function capitalizeFirstLetter(string: string) {
 
 // product/{product.id}/issue/{issue.id}
 export default function ProductIssuePage() {
-  const id = usePathname().split("/")[2];
-
-  // check if id is a number
-  // if not, redirect to 404
-  if (isNaN(Number(id))) {
-    redirect("/404");
-  }
+  const x = useParams().name as String;
+  if (typeof x !== "string") redirect("/404");
+  const name = decodeURIComponent(x);
 
   const clusters: IssueCluster[] = [
     {
