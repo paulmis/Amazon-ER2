@@ -51,22 +51,20 @@ export default function Home() {
   } else if (Number(page) < 1) {
     redirect("/404");
   }
+  const [previousData, setPreviousData] = useState<productInfo[] | undefined>([]);
 
   const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPreviousData(products);
     setSearch(event.target.value);
   }
 
   // formhanlder on saerch
-  const handleSearch = () => {
-    console.log(search);
-    redirect(`/products/page/${page}?search=${search}`);
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(`/products/page/${page}?search=${search}`);
   }
 
-  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5`, fetcher);
-
-  if (isLoading || !products) return <div>Loading...</div>
-  if (error) return <div>Error</div>
-
+  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`, fetcher);
   const request = () => {/*TODO*/ }
 
 
@@ -79,7 +77,7 @@ export default function Home() {
       <main className="flex min-h-screen flex-col w-full p-16">
         <div className="flex items-left justify-center flex-col h-full w-full p-4 " >
           <div className="flex justify-center w-full h-24">
-            <form action={`/products/page/1/?search=${search}`}  className="w-[40%]" method="get" >
+            <form onSubmit={handleSearch}  className="w-[40%]" method="get" >
               <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
             </form>
             <Pagination pageNumber={Number(page)}></Pagination>
@@ -94,7 +92,7 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product, index) => (
+                {(products ?? previousData ?? []).map((product, index) => (
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
                       <Button variant="ghost" onClick={request} disabled={product.llm_result_count != 0}>{
