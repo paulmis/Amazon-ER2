@@ -18,11 +18,10 @@ import { redirect, usePathname } from "next/navigation";
 import useSWR from "swr";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import Issue from "@/app/models/issues";
-import ProductIssue from '../../../models/productIssues';
 import { get } from "http";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { fetcher } from "@/lib/products";
+import { productInfo } from "@/app/models/models";
+import { fetcher } from "@/lib/utils";
 
 
 export interface BadgeProps {
@@ -30,16 +29,11 @@ export interface BadgeProps {
   text: string
 }
 
-export interface productInfo {
-  value: string,
-  llm_result_count: number,
-  total_count: number,
-}
 
-export function Badge({ color, text} : BadgeProps) {
+export function Badge({ color, text }: BadgeProps) {
   return <div
     className="badge"
-    style={{backgroundColor: color}}
+    style={{ backgroundColor: color }}
   >
     {text}
   </div>
@@ -55,13 +49,7 @@ export default function Home() {
     redirect("/404");
   }
 
-  const c: string[] = ["Active", "Active", "Request", "Requesting"];
-  // copy the same c array 10 times
-  for (let i = 0; i < 3; i++) c.push(...c);
-
-  const allIsues: Issue[] = []
-
-  const {data: products, isLoading, error} =  useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=20`, fetcher);
+  const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5`, fetcher);
 
   if (isLoading || !products) return <div>Loading...</div>
   if (error) return <div>Error</div>
@@ -82,7 +70,7 @@ export default function Home() {
             <Table>
               <TableHeader>
                 <TableRow>
-                <TableHead className="w-[3%]">Status</TableHead>
+                  <TableHead className="w-[3%]">Status</TableHead>
                   <TableHead className="w-[28%]">Product</TableHead>
                   <TableHead className="w-[3%]">Issues</TableHead>
                 </TableRow>
@@ -91,20 +79,19 @@ export default function Home() {
                 {products.map((product, index) => (
                   <TableRow key={index}>
                     <TableCell className="py-[0.39rem]">
-                      <Button variant="ghost" onClick={request} disabled={c[index] != "Request"}>{
-                        c[index] == "Active" ? "Active" :
-                          c[index] == "Request" ? "Request" :
-                            <CircularProgress isIndeterminate color='gray' size={30} />
+                      <Button variant="ghost" onClick={request} disabled={product.llm_result_count != 0}>{
+                        product.llm_result_count != 0 ? "Active" : "Request"
                       }</Button>
                     </TableCell>
                     <TableCell className="py-[0.39rem]">{product.value}</TableCell>
                     <TableCell className="py-[0.39rem]">
-                      <div className="flex flex-row">
-                        <Badge color="#3b81d1" text={product.total_count.toString()}/>
-                        <Badge color="#d13212" text={product.total_count.toString()}/>
-                        <Badge color="#ebce38" text={product.total_count.toString()}/>
-                        <Badge color="#1d8102" text={product.total_count.toString()}/>
-                      </div>
+                      {product.llm_result_count != 0 ?
+                        <div className="flex flex-row">
+                          <Badge color="#d13212" text={product.severities.high.toString()} />
+                          <Badge color="#ebce38" text={product.severities.medium.toString()} />
+                          <Badge color="#1d8102" text={product.severities.low.toString()} />
+                        </div> : "Request"
+                      }
                     </TableCell>
                   </TableRow>
                 ))}
