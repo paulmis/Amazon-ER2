@@ -10,7 +10,6 @@ from sqlalchemy.orm import load_only, defer
 from .analyzer import *
 from .ai.interface import analyze_comments, cluster_llm_results, generate_image
 import time
-from duckduckgo_images_api import search
 import os
 
 ROWS_PER_PAGE = 100
