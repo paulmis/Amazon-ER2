@@ -147,10 +147,11 @@ def aggregate_issues_by_query(query_dicts, granularity=1):
     comments_missing_llm_results = list(
         map(lambda x: x[0], filter(lambda x: x[1] is None, res))
     )
-    bedrock_results = analyze_comments(comments_missing_llm_results)
-
-    db.session.add_all(bedrock_results)
-    db.session.commit()
+    bedrock_results = []
+    for foo in analyze_comments(comments_missing_llm_results):
+        bedrock_results += foo
+        db.session.add_all(foo)
+        db.session.commit()
 
     llm_res_map = {}
     for i in range(len(comments_missing_llm_results)):
