@@ -16,5 +16,8 @@ issue_extraction_prompt = """
     ```
 """
 
-def create_cluster_summarizer_prompt(cluster_items: list[str], system_prompt: str = issue_extraction_prompt):
+
+def create_cluster_summarizer_prompt(
+    cluster_items: list[str], system_prompt: str = issue_extraction_prompt
+):
     return f"{anthropic_bedrock.HUMAN_PROMPT} {system_prompt}\n\n These are the issue names, please give a descriptive cluster name: {','.join(cluster_items[:10])}\n\n {anthropic_bedrock.AI_PROMPT}"
