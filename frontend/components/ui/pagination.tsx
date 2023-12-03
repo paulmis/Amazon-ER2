@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 // get pageNumber from props
 
-export const Pagination = ({ pageNumber }: { pageNumber: number }) => {
+export const Pagination = ({ pageNumber, brandName }: { pageNumber: number, brandName: string }) => {
 
     const getRange = (pageNumber: number) => {
         const start = Math.floor(pageNumber / 5) * 5 + (pageNumber % 5 == 0 ? -4 : 1);
@@ -12,7 +12,7 @@ export const Pagination = ({ pageNumber }: { pageNumber: number }) => {
 
     const goToPage = (pageNumber: number) => {
         if (pageNumber < 1) return () => { window.location.href = `/404` }
-        return () => { window.location.href = `/products/page/${pageNumber}` }
+        return () => { window.location.href = `/${brandName}/products/page/${pageNumber}` }
       }
     
 

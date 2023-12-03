@@ -22,9 +22,11 @@ import { get } from "http";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/ui/header";
+import { VictoryPie } from "victory";
+import SubHeader from "@/components/ui/subheader";
 
 
 export interface BadgeProps {
@@ -41,7 +43,9 @@ export function Badge({ color, text }: BadgeProps) {
     {text}
   </div>
 }
-
+const pieColors = ["#d13212", "#ebce38", "#1d8102"];
+const wantedGraphicData = [{ x: "low", y: 10 }, { x: "medium", y: 50 }, { x: "high", y: 40 }]; // Data that we want to display
+const defaultGraphicData = [{ y: 0 }, { y: 0 }, { y: 100 }]; 
 
 export default function Home() {
 
@@ -49,6 +53,12 @@ export default function Home() {
   const searchQuery = useSearchParams().get("search") ?? "";
   const [search, setSearch] = useState<string>(searchQuery);
   const [isRequesting, setIsRequesting] = useState<boolean>(false);
+  const [graphicData, setGraphicData] = useState(defaultGraphicData);
+
+  useEffect(() => {
+    setGraphicData(wantedGraphicData); // Setting the data that we want to display
+  }, []);
+
 
   if (isNaN(Number(page))) {
     redirect("/404");
@@ -96,26 +106,16 @@ export default function Home() {
       </Head>
       <Header />
       <main className="flex min-h-screen flex-col w-full p-16 pt-20 items-start">
-        <div className="flex items-left justify-center flex-col h-full w-full p-4 ">
-          <div className="flex justify-center">
-            <div className="flex flex-row items-center w-[80%] pb-10">
-              <div className="px-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-              </div>
-              <Link href="/" className="text-xl py-2 w-[200px]" style={{ whiteSpace: "nowrap" }}>All brands</Link>
-              <div className="text-xl py-2"></div>
-            </div>
-          </div>
-          <div className="flex justify-center w-full h-24">
+        <div className="flex items-left justify-center flex-col h-full w-full p-4">
+            <SubHeader url = "/" goBack = "Brands" name = {brandName} size="3xl"></SubHeader>
+          <div className="flex w-full h-24">
             <form onSubmit={handleSearch} className="w-[40%]" method="get" >
               <Input type="search" placeholder="Product name" className="w-full" value={search} onChange={updateSearch}></Input>
             </form>
-            <Pagination pageNumber={Number(page)}></Pagination>
+            <Pagination pageNumber={Number(page)} brandName={encodeURIComponent(brandName)}></Pagination>
           </div>
-          <div className="px-48">
-            <Table>
+          <div className="w-full flex flex-row ">
+            <Table className="w-[70%]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[3%]">Status</TableHead>
@@ -129,16 +129,16 @@ export default function Home() {
                     <TableCell className="py-[0.39rem]">
                       {
                         isRequesting && product.llm_result_count == -1 ? <CircularProgress className="ml-7" isIndeterminate size="24px" /> :
-                          <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                          <Button variant="ghost" className = "px-0" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
                             {product.llm_result_count != 0 ? "Active" : "Request"}
                           </Button>
                       }
                     </TableCell>
                     <TableCell className="py-[0.39rem]">
-                    {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`}>
+                    {product.llm_result_count > 0 ? <Link href={`/${brandName}/products/${encodeURIComponent(product.value)}/issues`} className="px-0">
                         {product.value}
                       </Link> :
-                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0}>
+                        <Button variant="ghost" onClick={handleClick(product)} disabled={product.llm_result_count != 0} className="px-0">
                           {product.value}
                         </Button>
                       }
@@ -156,6 +156,13 @@ export default function Home() {
                 ))}
               </TableBody>
             </Table>
+            <div><VictoryPie
+              colorScale={pieColors}
+              data={graphicData}
+              height={400}
+              width={400}
+              animate={{  duration: 4000, easing: 'exp' }}
+            /></div>
           </div>
         </div>
       </main>
