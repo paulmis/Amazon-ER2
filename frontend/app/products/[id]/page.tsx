@@ -1,22 +1,16 @@
 "use client";
 
-
 import Head from "next/head";
 import { usePathname } from "next/navigation";
 
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
   } from "@/components/ui/table";
-import { use } from "react";
-import useSWR from "swr";
-import { Image } from "@chakra-ui/react";
 
 export async function fetcher<JSON = any>(
   input: RequestInfo,

@@ -1,8 +1,6 @@
 "use client";
 
 import Review from "@/app/models/review";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableRow } from "@/components/ui/table";
 import { redirect, usePathname } from "next/navigation";
 
 // product/{product.id}/issue/{issue.id}
