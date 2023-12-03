@@ -23,7 +23,6 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { productInfo } from "@/app/models/models";
 import { fetcher } from "@/lib/utils";
 import { useState } from "react";
-import ProductIssue from '@/app/models/productIssues';
 
 
 export interface BadgeProps {
@@ -97,15 +96,13 @@ export default function Home() {
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(`/products/page/${page}?search=${search}`);
   }
 
   const { data: products, isLoading, error } = useSWR<productInfo[]>(`http://localhost:5000/aggregate_unique?field=product&page=${page}&count=5&query=${search}`, fetcher);
 
-  if (isLoading || !products) return <div>Loading...</div>
   if (error) return <div>Error</div>
 
-  const handleClick = (product: ProductIssue) => async () => {
+  const handleClick = (product: productInfo) => async () => {
     setIsRequesting(true);
     try {
       product.llm_result_count = -1;
