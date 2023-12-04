@@ -6,7 +6,7 @@ import numpy as np
 from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .embeddings import generate_embeddings_parallel
-from .llm import llm_wrapper
+from .llm import llm_wrapper, save_llm_result
 import os
 import json
 from .prompts import *
@@ -63,6 +63,7 @@ def get_json_for_comment(product_name: str, comment: str, iter=0):
         completion = llm_wrapper(create_issue_extraction_prompt(product_name, comment))
         comment_json = get_json_from_llm(completion)
         validate_comment_json(comment_json)
+        save_llm_result(create_issue_extraction_prompt(product_name, comment), completion)
         return comment_json
     except ValueError as ve:
         if iter > 25:
@@ -77,6 +78,7 @@ def get_cluster_name(cluster_items: list[str], iter=0):
         cluster_name_json = get_json_from_llm(completion)
         if "cluster" not in cluster_name_json:
             raise ValueError("No cluster name found in json")
+        save_llm_result(create_cluster_summarizer_prompt(cluster_items), completion)
         return cluster_name_json["cluster"]
     except ValueError as ve:
         if iter > 25:
@@ -93,6 +95,7 @@ def get_highlight(product_review: str, issue: str, iter=0):
             raise ValueError("No text found in json")
         if not(highlight["text"] in product_review):
             raise ValueError("Text not found in product review")
+        save_llm_result(create_highlight_prompt(product_review, issue), completion)
         return highlight["text"]
     except ValueError as ve:
         if iter > 25:

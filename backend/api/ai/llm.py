@@ -15,7 +15,6 @@ client = AnthropicBedrock(
 from sqlalchemy.exc import IntegrityError
 
 
-@lru_cache(maxsize=None)
 def llm_wrapper(text: str) -> str:
     """Wrapper for the LLM API with caching to database."""
     with app.app_context():
@@ -31,10 +30,16 @@ def llm_wrapper(text: str) -> str:
                 ).completion
 
                 cached_result = LLM_Cache(text_prompt=text, llm_response=llm_response)
-                db.session.add(cached_result)
-                db.session.commit()
             return cached_result.llm_response
         except IntegrityError:
             db.session.rollback()
             # Handle the race condition here by re-querying the database
             return LLM_Cache.query.filter_by(text_prompt=text).first().llm_response
+
+def save_llm_result(text_prompt: str, llm_response: str) -> None:
+    try:
+        with app.app_context():
+            db.session.add(LLM_Cache(text_prompt=text_prompt, llm_response=llm_response))
+            db.session.commit()
+    except IntegrityError:
+        None
