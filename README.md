@@ -1,12 +1,16 @@
-# Elastic Review Review
+# Amazon Elastic Review Review (Amazon ER2)
 
-## Overview
-Welcome to **Elastic Review Review**, an advanced review analyzer tailored for Amazon sellers. Our tool leverages cutting-edge technologies to identify key issues from customer feedback, cluster them for better understanding, and prioritize them based on their impact on your business.
+Welcome to **Amazon Elastic Review Review**, an advanced review analyzer tailored for Amazon sellers. Our tool leverages cutting-edge technologies to identify key issues from customer feedback, cluster them for better understanding, and prioritize them based on their impact on your business.
+
+_Note: this project is not affiliated with Amazon, and was built as a solution for a LauzHack 2023 challenge prepared by AWS._
 
 ### Key Features:
 - **Issue Identification**: Extracts critical insights from reviews using advanced NLP models.
 - **Clustering**: Groups similar issues using the OPTICS clustering algorithm for a clearer overview.
 - **Prioritization**: Prioritizes issues based on their frequency and impact on customer satisfaction.
+
+![image (2)](https://github.com/paulmis/lauzhack23/assets/45182027/f040a784-035b-422d-bab4-eba4f95fdf2d)
+
 
 ## How to run
 You can run this demo locally only:
