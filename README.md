@@ -86,6 +86,40 @@ If successful, you should see:
 ### Provide your own dataset
 
 
+### Provide your own dataset
+
+To integrate your own dataset with Amazon Elastic Review Review, follow these steps:
+
+1. Prepare your dataset in CSV format. The dataset should adhere to the following column structure:
+
+   ```
+   Product Name,Brand Name,Price,Rating,Reviews,Review Votes
+   ```
+
+   - `Product Name`: The name of the product.
+   - `Brand Name`: The name of the brand associated with the product.
+   - `Price`: The price of the product.
+   - `Rating`: The rating out of 5 of the review.
+   - `Reviews`: The text of the customer review.
+   - `Review Votes`: The number of votes/likes the review received.
+
+2. Locate the `populate_database.py` file within the project's directory.
+
+3. Modify the `CSV_FILE` path variable in `populate_database.py` to point to your CSV file. For instance:
+
+   ```python
+   CSV_FILE = "path/to/your/dataset.csv"
+   ```
+
+   Replace `path/to/your/dataset.csv` with the actual file path of your dataset.
+
+4. After updating the `CSV_FILE` path, the application will use your dataset for its analysis process.
+5. Rerunning the `populate_database.py` should now add the new dataset to the database. 
+
+
+Note: If the script has been previously ran deleting the old database would be needed.
+
+
 ## Technologies Used
 - **Amazon Bedrock**: Robust infrastructure for scalable data processing.
 - **Claude V2 LLM**: State-of-the-art language model for natural language understanding.

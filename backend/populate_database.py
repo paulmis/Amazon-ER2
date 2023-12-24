@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 
-CSV_FILE = "api/ai/data/preprocessed_dataset_b2a8b513791b1ec82721131a232a4be720297cdf3147009738cb15abd88ad51e.csv"
+CSV_FILE = "api/ai/data/data.csv"
 SQLITE_DB = "instance/aws.db"
 
 

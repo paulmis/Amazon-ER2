@@ -260,7 +260,6 @@ def get_reviews_in_cluster():
 
 
 @app.route("/image", methods=["GET"])
-@lru_cache(maxsize=32)
 def get_image():
     product_name = request.args.get("product")
     if not product_name:
