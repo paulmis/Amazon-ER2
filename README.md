@@ -63,7 +63,10 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
 ```
 
-6. Run the frontend
+6. Run the `populate_database.py` file.
+This should populate the database with the provided CSV file. See section below on how to provide the data.
+
+7. Run the frontend
 
 ```
 cd frontend
@@ -81,10 +84,7 @@ If successful, you should see:
  ✓ Ready in 3.3s
 ```
 
-7. Access `localhost:3000` to see the user interface.
-
-### Provide your own dataset
-
+8. Access `localhost:3000` to see the user interface.
 
 ### Provide your own dataset
 
